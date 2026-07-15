@@ -288,20 +288,6 @@ export default function LeadPanel({ lead, onClose, onLeadUpdated }: LeadPanelPro
                     </div>
                   )}
 
-                  <div>
-                    <label htmlFor="notes" style={{ fontSize: '13px', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
-                      Notes / Remarks
-                    </label>
-                    <textarea
-                      id="notes"
-                      name="notes"
-                      className="input"
-                      placeholder="Add conversation notes or reason for failure..."
-                      rows={2}
-                      style={{ resize: 'vertical', width: '100%', minHeight: '60px' }}
-                    />
-                  </div>
-
                   <button type="submit" disabled={isPending} className="btn primary block">
                     {isPending ? 'Saving...' : 'Save Call Outcome'}
                   </button>
