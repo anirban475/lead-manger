@@ -63,16 +63,6 @@ export default function LogCallForm({ companyKey }: { companyKey: string }) {
         </div>
       ) : null}
 
-      <div className="field">
-        <label htmlFor="notes">Notes</label>
-        <textarea
-          className="textarea"
-          id="notes"
-          name="notes"
-          placeholder="What happened on the call? HR capacity, pain, wrong-number detail…"
-        />
-      </div>
-
       <SubmitBtn disabled={disp === ''} />
     </form>
   );
