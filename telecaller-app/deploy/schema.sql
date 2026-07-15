@@ -80,7 +80,7 @@ END $$;
 GRANT CONNECT ON DATABASE leads TO telecaller_app;
 GRANT USAGE  ON SCHEMA public   TO telecaller_app;
 GRANT SELECT ON leads                       TO telecaller_app;
-GRANT INSERT (company_key, company_name, contact_phone, contact_email, contact_name, contact_title, contact_source, city, status, origin, created_at, updated_at) ON leads TO telecaller_app;
+GRANT INSERT (company_key, company_name, contact_phone, contact_email, contact_name, contact_title, contact_source, city, status, origin, brand, created_at, updated_at) ON leads TO telecaller_app;
 GRANT UPDATE (status, next_action, next_action_date, last_disposition, last_called_at, call_count, updated_at, contact_phone, contact_email, contact_name, contact_title, contact_source) ON leads TO telecaller_app;
 GRANT SELECT, INSERT ON telecall_logs       TO telecaller_app;
 GRANT USAGE, SELECT ON SEQUENCE telecall_logs_id_seq TO telecaller_app;
@@ -97,3 +97,10 @@ ALTER TABLE leads DROP CONSTRAINT IF EXISTS leads_status_chk;
 ALTER TABLE leads ADD CONSTRAINT leads_status_chk CHECK (status IN
   ('new','handed_off','hot','replied','dnd','not_interested','contacted','qualified','disqualified',
    'won','lost','opted_out','registered'));
+
+-- 7. Brand column default. `brand` is a scraper-owned NOT NULL column (added on the scraper/outreach
+--    side, no default). The telecaller app's inserts (createLead / bulkCreateLeads) do not set `brand`,
+--    so without a default every Add-Lead / CSV-import INSERT fails with a NOT NULL violation. All
+--    current leads are 'jobdrive', which is the telecaller app's only brand, so default to it.
+--    (Column is created by the scraper side; this ALTER assumes it already exists on the leads DB.)
+ALTER TABLE leads ALTER COLUMN brand SET DEFAULT 'jobdrive';
