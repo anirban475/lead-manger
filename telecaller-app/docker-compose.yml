@@ -1,0 +1,17 @@
+services:
+  telecaller-app:
+    build: .
+    container_name: telecaller-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    # Publish to loopback only; host nginx terminates TLS and proxies here.
+    ports:
+      - "127.0.0.1:3020:3000"
+
+# Join the existing external network that hosts shared-postgres so the app can
+# reach it by hostname (shared-postgres:5432). Matches the n8n client1 pattern.
+networks:
+  default:
+    external: true
+    name: shared-network

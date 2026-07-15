@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+build/
+
+# Environment / secrets (never commit real values)
+.env
+.env.local
+.env*.local
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Scratch / QA artifacts
+csv-qa-test.csv

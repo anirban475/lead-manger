@@ -1,0 +1,36 @@
+flowchart TD
+    A["Lead scored HOT or WARM<br/>(after dedupe + ICP filter)"] --> B{"Contact already<br/>on the lead?"}
+    B -- yes --> SKIP["Skip enrichment<br/>already has contact"]
+    B -- no --> C{"Phone or email<br/>inside the JD text?"}
+
+    C -- yes --> C1["contact_source = jd"] --> DONE(["Contact found<br/>save + ready for outreach queue"])
+    C -- no --> D["Scrape company website<br/>+ hiring post for phone / email"]
+
+    D --> E{"Phone or email<br/>found on site?"}
+    E -- yes --> E1["contact_source = website"] --> DONE
+    E -- no --> F["Apollo ORG SEARCH<br/>(FREE, no credit)"]
+
+    F --> G{"Org record<br/>found in Apollo?"}
+    G -- no --> P["contact_source = pending"] --> MANUAL["Manual review queue"]
+    G -- yes --> H["Get HQ phone + domain<br/>NOTE: no employee count,<br/>size gate stays on scrape/site"]
+
+    H --> I{"Lead tier?"}
+    I -- warm --> J["Save HQ phone<br/>contact_source = apollo_org"] --> DONE
+    I -- hot --> K["Apollo PEOPLE SEARCH<br/>(FREE) HR / admin titles"]
+
+    K --> L{"HR person<br/>found?"}
+    L -- no --> J
+    L -- yes --> M{"Greenlit to dial<br/>AND worth a credit?"}
+    M -- no --> J
+    M -- yes --> N["Apollo PEOPLE ENRICHMENT<br/>(PAID, 1 credit)"]
+    N --> O["Reveal name + direct phone + email<br/>contact_source = apollo_person"] --> DONE
+
+    DONE --> OUT{"Ready for outreach"}
+    OUT --> SUP["Check suppression table<br/>before ANY send"]
+
+    classDef free fill:#e6f4ea,stroke:#137333;
+    classDef paid fill:#fce8e6,stroke:#c5221f;
+    classDef done fill:#e8f0fe,stroke:#1a73e8;
+    class F,K free;
+    class N paid;
+    class DONE done;
