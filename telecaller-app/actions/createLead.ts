@@ -36,8 +36,8 @@ export async function createLead(formData: FormData): Promise<{ success: boolean
       `INSERT INTO leads (
         company_key, company_name, contact_phone, contact_email, 
         contact_name, contact_title, contact_source, city, 
-        status, origin
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+        status, origin, brand
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
       [
         companyKey,
         companyName,
@@ -49,6 +49,7 @@ export async function createLead(formData: FormData): Promise<{ success: boolean
         city,
         'new',
         'manual',
+        'jobdrive',
       ]
     );
 

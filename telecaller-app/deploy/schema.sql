@@ -31,6 +31,8 @@ ALTER TABLE leads ADD COLUMN IF NOT EXISTS last_disposition text;
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS last_called_at   timestamptz;
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS call_count       int NOT NULL DEFAULT 0;
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS origin           text DEFAULT 'scrape';
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS brand            text;  -- amatec|jobdrive; backfilled existing to 'jobdrive' 2026-07-15; SET NOT NULL after save_leads stamps brand
+ALTER TABLE leads ALTER COLUMN brand SET NOT NULL;  -- enforced 2026-07-15 after all writers (save_leads, createLead, bulkCreateLeads) stamp brand
 
 -- 3. Per-query conversion signal (the feedback view the scraper reads)
 CREATE OR REPLACE VIEW query_conversion AS
@@ -97,10 +99,3 @@ ALTER TABLE leads DROP CONSTRAINT IF EXISTS leads_status_chk;
 ALTER TABLE leads ADD CONSTRAINT leads_status_chk CHECK (status IN
   ('new','handed_off','hot','replied','dnd','not_interested','contacted','qualified','disqualified',
    'won','lost','opted_out','registered'));
-
--- 7. Brand column default. `brand` is a scraper-owned NOT NULL column (added on the scraper/outreach
---    side, no default). The telecaller app's inserts (createLead / bulkCreateLeads) do not set `brand`,
---    so without a default every Add-Lead / CSV-import INSERT fails with a NOT NULL violation. All
---    current leads are 'jobdrive', which is the telecaller app's only brand, so default to it.
---    (Column is created by the scraper side; this ALTER assumes it already exists on the leads DB.)
-ALTER TABLE leads ALTER COLUMN brand SET DEFAULT 'jobdrive';

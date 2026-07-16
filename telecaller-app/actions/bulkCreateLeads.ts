@@ -136,8 +136,8 @@ export async function bulkCreateLeads(leads: BulkLeadInput[]): Promise<BulkImpor
         `INSERT INTO leads (
           company_key, company_name, contact_phone, contact_email, 
           contact_name, contact_title, contact_source, city, 
-          status, origin
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+          status, origin, brand
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
         [
           lead.company_key,
           lead.company_name,
@@ -148,7 +148,8 @@ export async function bulkCreateLeads(leads: BulkLeadInput[]): Promise<BulkImpor
           'csv',
           lead.city || null,
           'new',
-          'csv'
+          'csv',
+          'jobdrive'
         ]
       );
       result.inserted++;
