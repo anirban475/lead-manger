@@ -21,7 +21,7 @@ export default function CallSheet({ leads, isFollowupQueue = false }: { leads: L
   const [filters, setFilters] = useState<FilterState>({
     search: '',
     tier: '',
-    status: '',
+    lastOutcome: '',
     roleGroup: '',
     city: '',
     followupDue: isFollowupQueue, // default to true if in followup queue
@@ -32,7 +32,7 @@ export default function CallSheet({ leads, isFollowupQueue = false }: { leads: L
   // Extract filter dropdown options
   const cities = Array.from(new Set(leads.map((l) => l.city).filter(Boolean))) as string[];
   const roleGroups = Array.from(new Set(leads.map((l) => l.role_group).filter(Boolean))) as string[];
-  const statuses = Array.from(new Set(leads.map((l) => l.status).filter(Boolean))) as string[];
+  const outcomes = Array.from(new Set(leads.map((l) => l.last_disposition).filter(Boolean))) as string[];
 
   // Filter leads in memory
   const todayStr = new Date().toISOString().split('T')[0];
@@ -44,7 +44,11 @@ export default function CallSheet({ leads, isFollowupQueue = false }: { leads: L
       if (!comp.includes(q) && !cont.includes(q)) return false;
     }
     if (filters.tier && lead.tier !== filters.tier) return false;
-    if (filters.status && lead.status !== filters.status) return false;
+    if (filters.lastOutcome === '__none__') {
+      if (lead.last_disposition) return false;
+    } else if (filters.lastOutcome && lead.last_disposition !== filters.lastOutcome) {
+      return false;
+    }
     if (filters.roleGroup && lead.role_group !== filters.roleGroup) return false;
     if (filters.city && lead.city !== filters.city) return false;
     if (filters.followupDue) {
@@ -72,7 +76,7 @@ export default function CallSheet({ leads, isFollowupQueue = false }: { leads: L
         onChange={setFilters}
         cities={cities.sort()}
         roleGroups={roleGroups.sort()}
-        statuses={statuses.sort()}
+        outcomes={outcomes.sort()}
       />
 
       <div className="sheet-summary-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>

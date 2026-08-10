@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { FilterState, SavedFilter, getSavedFilters, saveFilter, deleteFilter } from '@/lib/savedFilters';
+import { DISPOSITION_META } from '@/lib/dispositions';
 
 type FilterBarProps = {
   filters: FilterState;
   onChange: (filters: FilterState) => void;
   cities: string[];
   roleGroups: string[];
-  statuses: string[];
+  outcomes: string[];
 };
 
-export default function FilterBar({ filters, onChange, cities, roleGroups, statuses }: FilterBarProps) {
+export default function FilterBar({ filters, onChange, cities, roleGroups, outcomes }: FilterBarProps) {
   const [presets, setPresets] = useState<SavedFilter[]>([]);
   const [newPresetName, setNewPresetName] = useState('');
   const [showSaveForm, setShowSaveForm] = useState(false);
@@ -47,7 +48,7 @@ export default function FilterBar({ filters, onChange, cities, roleGroups, statu
     onChange({
       search: '',
       tier: '',
-      status: '',
+      lastOutcome: '',
       roleGroup: '',
       city: '',
       followupDue: false,
@@ -92,13 +93,16 @@ export default function FilterBar({ filters, onChange, cities, roleGroups, statu
 
         <select
           className="input"
-          value={filters.status}
-          onChange={(e) => updateFilter('status', e.target.value)}
+          value={filters.lastOutcome || ''}
+          onChange={(e) => updateFilter('lastOutcome', e.target.value)}
           style={{ width: '150px' }}
         >
-          <option value="">All Statuses</option>
-          {statuses.map((s) => (
-            <option key={s} value={s}>{s}</option>
+          <option value="">All Outcomes</option>
+          <option value="__none__">Not called yet</option>
+          {outcomes.map((o) => (
+            <option key={o} value={o}>
+              {(DISPOSITION_META as Record<string, { label: string }>)[o]?.label ?? o}
+            </option>
           ))}
         </select>
 
