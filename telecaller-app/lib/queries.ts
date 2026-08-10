@@ -45,8 +45,11 @@ const CLOSED = `('won','lost','opted_out')`;
 // A telecaller only sees leads she can actually dial (mirrors normalizePhone's >= 8-digit threshold).
 const HAS_PHONE = `contact_phone IS NOT NULL AND length(regexp_replace(contact_phone, '[^0-9]', '', 'g')) >= 8`;
 
+// Dead phone numbers logged as invalid_number must not be re-dialled.
+const NOT_INVALID_NUMBER = `last_disposition IS DISTINCT FROM 'invalid_number'`;
+
 export async function getQueue(opts: { tier?: string } = {}): Promise<Lead[]> {
-  const where: string[] = [`status NOT IN ${CLOSED}`, HAS_PHONE];
+  const where: string[] = [`status NOT IN ${CLOSED}`, HAS_PHONE, NOT_INVALID_NUMBER];
   const params: unknown[] = [];
   if (opts.tier) {
     params.push(opts.tier);
@@ -70,6 +73,7 @@ export async function getFollowups(): Promise<Lead[]> {
       AND next_action_date <= current_date
       AND status NOT IN ${CLOSED}
       AND ${HAS_PHONE}
+      AND ${NOT_INVALID_NUMBER}
     ORDER BY next_action_date ASC, score DESC NULLS LAST
     LIMIT 200`;
   return query<Lead>(sql);
