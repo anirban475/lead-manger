@@ -3,7 +3,7 @@
 export type FilterState = {
   search: string;
   tier: string;
-  status: string;
+  lastOutcome: string;
   roleGroup: string;
   city: string;
   followupDue: boolean;
