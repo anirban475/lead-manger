@@ -23,3 +23,5 @@ yarn-error.log*
 
 # Scratch / QA artifacts
 csv-qa-test.csv
+*_backup.json
+
