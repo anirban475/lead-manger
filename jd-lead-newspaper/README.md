@@ -129,3 +129,14 @@ estimate before starting was 8 to 12%.
   switchboard. Use Apollo.
 - Single point of failure on Ads2Publish. Cache raw pulls. The CareersWave PDF
   mirror is the fallback if it ever closes.
+
+### Trap: flipping workflow_entity.active does not reload n8n
+
+n8n holds active workflows in memory. Executing `UPDATE workflow_entity SET active = ...` directly in Postgres mutates the database row, but does not notify or reload the running n8n process.
+
+The only way to trigger a live workflow reload from a script is via the n8n REST API deactivate/activate endpoint pair (`POST /api/v1/workflows/{id}/deactivate` followed by `POST /api/v1/workflows/{id}/activate`) on `http://localhost:5678`.
+
+`add_newspaper_mcp_tool.py` retains the DB active-toggle solely as a degraded fallback when the REST API reload fails, exiting with status code `2` and printing `[RELOAD DEGRADED]` to `stderr`. An exit code of `2` indicates that while the database write succeeded, the in-memory workflow in n8n remains stale and must be manually reloaded via the n8n UI.
+
+*(Note: The regression introduced in commit `2b18006` occurred because `urllib` was never imported. A bare `except` block inside the loop swallowed the resulting `NameError`, causing the script to report `[SUCCESS]` and exit `0` without ever reloading n8n or performing a fallback).*
+
