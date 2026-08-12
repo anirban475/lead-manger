@@ -4,6 +4,8 @@ import argparse
 import json
 import subprocess
 import uuid
+import urllib.request
+import urllib.error
 
 WORKFLOW_ID = "zUbadDjZ9PfMR8av"
 BACKUP_PATH = "/root/projects/lead-manger/jd-lead-newspaper/zUbadDjZ9PfMR8av_backup.json"
@@ -19,6 +21,47 @@ def get_workflow_from_db(workflow_id):
         print(f"Error fetching workflow from DB: {res.stderr}", file=sys.stderr)
         sys.exit(1)
     return json.loads(res.stdout.strip())
+
+def reload_workflow_via_api(workflow_id: str) -> bool:
+    cmd_key = ["docker", "exec", "shared-postgres", "psql", "-U", "n8n_user", "-d", "n8n", "-Atc", "SELECT \"apiKey\" FROM user_api_keys;"]
+    res = subprocess.run(cmd_key, capture_output=True, text=True, check=True)
+    keys = [k.strip() for k in res.stdout.splitlines() if k.strip()]
+    print(f"[RELOAD] Read {len(keys)} API key(s) from user_api_keys.")
+
+    for key in keys:
+        deact_url = f"http://localhost:5678/api/v1/workflows/{workflow_id}/deactivate"
+        act_url = f"http://localhost:5678/api/v1/workflows/{workflow_id}/activate"
+        req_deact = urllib.request.Request(deact_url, method="POST", headers={"X-N8N-API-KEY": key})
+        req_act = urllib.request.Request(act_url, method="POST", headers={"X-N8N-API-KEY": key})
+
+        try:
+            with urllib.request.urlopen(req_deact) as resp_deact:
+                deact_ok = (200 <= resp_deact.status < 300)
+            with urllib.request.urlopen(req_act) as resp_act:
+                act_ok = (200 <= resp_act.status < 300)
+            if deact_ok and act_ok:
+                print("[TOGGLE] Workflow deactivated and reactivated via n8n REST API.")
+                return True
+        except urllib.error.HTTPError as e:
+            print(f"[RELOAD WARNING] API key request failed with HTTPError: {e.code} {e.reason}", file=sys.stderr)
+        except urllib.error.URLError as e:
+            print(f"[RELOAD WARNING] API key request failed with URLError: {e.reason}", file=sys.stderr)
+        except OSError as e:
+            print(f"[RELOAD WARNING] API key request failed with OSError: {e}", file=sys.stderr)
+    return False
+
+def reload_workflow_via_db(workflow_id: str) -> bool:
+    print("[RELOAD DEGRADED] REST reload failed. Toggled workflow_entity.active in Postgres, which does NOT reload n8n in-memory. Reload the workflow in the n8n UI before using the new node.", file=sys.stderr)
+    psql_script = f"""
+UPDATE workflow_entity SET active = false WHERE id = '{workflow_id}';
+UPDATE workflow_entity SET active = true WHERE id = '{workflow_id}';
+"""
+    cmd = ["docker", "exec", "-i", "shared-postgres", "psql", "-U", "n8n_user", "-d", "n8n"]
+    res = subprocess.run(cmd, input=psql_script, capture_output=True, text=True)
+    if res.returncode != 0:
+        print(f"Error toggling workflow active state in DB: {res.stderr}", file=sys.stderr)
+        return False
+    return True
 
 def main():
     parser = argparse.ArgumentParser(description="Add fetch_newspaper_ads node to n8n workflow zUbadDjZ9PfMR8av.")
@@ -98,15 +141,20 @@ def main():
         json.dump(data, f)
     print(f"\n[BACKUP] Current workflow dumped to {BACKUP_PATH}")
 
-    # Write updated nodes and connections to database using psql stdin
+    # Write updated nodes and connections to database using psql stdin and variables
     nodes_json = json.dumps(updated_nodes)
     connections_json = json.dumps(updated_connections)
 
     psql_script = f"""
-UPDATE workflow_entity SET nodes = '{nodes_json.replace("'", "''")}', connections = '{connections_json.replace("'", "''")}' WHERE id = '{WORKFLOW_ID}';
-UPDATE workflow_history SET nodes = '{nodes_json.replace("'", "''")}', connections = '{connections_json.replace("'", "''")}' WHERE "workflowId" = '{WORKFLOW_ID}';
+UPDATE workflow_entity SET nodes = :'nodes'::json, connections = :'conns'::json WHERE id = '{WORKFLOW_ID}';
+UPDATE workflow_history SET nodes = :'nodes'::json, connections = :'conns'::json WHERE "workflowId" = '{WORKFLOW_ID}';
 """
-    cmd = ["docker", "exec", "-i", "shared-postgres", "psql", "-U", "n8n_user", "-d", "n8n"]
+    cmd = [
+        "docker", "exec", "-i", "shared-postgres",
+        "psql", "-U", "n8n_user", "-d", "n8n",
+        "-v", f"nodes={nodes_json}",
+        "-v", f"conns={connections_json}"
+    ]
     res = subprocess.run(cmd, input=psql_script, capture_output=True, text=True)
     if res.returncode != 0:
         print(f"Error updating database: {res.stderr}", file=sys.stderr)
@@ -114,23 +162,11 @@ UPDATE workflow_history SET nodes = '{nodes_json.replace("'", "''")}', connectio
 
     print("[SUCCESS] Database updated successfully in workflow_entity and workflow_history.")
 
-    # Toggle workflow active state via API endpoints or DB if API fails
-    try:
-        cmd_key = ["docker", "exec", "shared-postgres", "psql", "-U", "n8n_user", "-d", "n8n", "-Atc", "SELECT \"apiKey\" FROM user_api_keys;"]
-        keys = subprocess.run(cmd_key, capture_output=True, text=True, check=True).stdout.splitlines()
-        for key in keys:
-            if not key.strip(): continue
-            req_deact = urllib.request.Request(f"http://localhost:5678/api/v1/workflows/{WORKFLOW_ID}/deactivate", method="POST", headers={"X-N8N-API-KEY": key.strip()})
-            try:
-                with urllib.request.urlopen(req_deact):
-                    req_act = urllib.request.Request(f"http://localhost:5678/api/v1/workflows/{WORKFLOW_ID}/activate", method="POST", headers={"X-N8N-API-KEY": key.strip()})
-                    with urllib.request.urlopen(req_act):
-                        print("[TOGGLE] Workflow deactivated and reactivated via n8n REST API.")
-                        break
-            except Exception:
-                continue
-    except Exception as e:
-        print(f"[TOGGLE WARNING] API toggle failed: {e}", file=sys.stderr)
+    if reload_workflow_via_api(WORKFLOW_ID):
+        sys.exit(0)
+    else:
+        reload_workflow_via_db(WORKFLOW_ID)
+        sys.exit(2)
 
 if __name__ == "__main__":
     main()
