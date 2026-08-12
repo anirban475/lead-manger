@@ -24,7 +24,16 @@ def get_workflow_from_db(workflow_id):
 
 def reload_workflow_via_api(workflow_id: str) -> bool:
     cmd_key = ["docker", "exec", "shared-postgres", "psql", "-U", "n8n_user", "-d", "n8n", "-Atc", "SELECT \"apiKey\" FROM user_api_keys;"]
-    res = subprocess.run(cmd_key, capture_output=True, text=True, check=True)
+    try:
+        res = subprocess.run(cmd_key, capture_output=True, text=True, check=True)
+    except subprocess.CalledProcessError as e:
+        err_msg = e.stderr.strip() if e.stderr else str(e)
+        print(f"[RELOAD WARNING] Failed to fetch API keys (exit code {e.returncode}): {err_msg}", file=sys.stderr)
+        return False
+    except OSError as e:
+        print(f"[RELOAD WARNING] Failed to fetch API keys (OSError): {e}", file=sys.stderr)
+        return False
+
     keys = [k.strip() for k in res.stdout.splitlines() if k.strip()]
     print(f"[RELOAD] Read {len(keys)} API key(s) from user_api_keys.")
 
@@ -51,7 +60,6 @@ def reload_workflow_via_api(workflow_id: str) -> bool:
     return False
 
 def reload_workflow_via_db(workflow_id: str) -> bool:
-    print("[RELOAD DEGRADED] REST reload failed. Toggled workflow_entity.active in Postgres, which does NOT reload n8n in-memory. Reload the workflow in the n8n UI before using the new node.", file=sys.stderr)
     psql_script = f"""
 UPDATE workflow_entity SET active = false WHERE id = '{workflow_id}';
 UPDATE workflow_entity SET active = true WHERE id = '{workflow_id}';
@@ -61,6 +69,7 @@ UPDATE workflow_entity SET active = true WHERE id = '{workflow_id}';
     if res.returncode != 0:
         print(f"Error toggling workflow active state in DB: {res.stderr}", file=sys.stderr)
         return False
+    print("[RELOAD DEGRADED] REST reload failed. Toggled workflow_entity.active in Postgres, which does NOT reload n8n in-memory. Reload the workflow in the n8n UI before using the new node.", file=sys.stderr)
     return True
 
 def main():
