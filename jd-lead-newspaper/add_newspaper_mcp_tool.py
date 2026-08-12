@@ -102,17 +102,9 @@ def main():
     nodes_json = json.dumps(updated_nodes)
     connections_json = json.dumps(updated_connections)
 
-    sql_query = f"UPDATE workflow_entity SET nodes = $1::json, connections = $2::json WHERE id = '{WORKFLOW_ID}';"
-    cmd = [
-        "docker", "exec", "-i", "shared-postgres",
-        "psql", "-U", "n8n_user", "-d", "n8n",
-        "-c", "PREPARE update_wf (text, text) AS UPDATE workflow_entity SET nodes = $1::json, connections = $2::json WHERE id = 'zUbadDjZ9PfMR8av';"
-    ]
-    
-    # We can pass sql commands via stdin
     psql_script = f"""
-PREPARE update_wf (json, json) AS UPDATE workflow_entity SET nodes = $1, connections = $2 WHERE id = '{WORKFLOW_ID}';
-EXECUTE update_wf ('{nodes_json.replace("'", "''")}', '{connections_json.replace("'", "''")}');
+UPDATE workflow_entity SET nodes = '{nodes_json.replace("'", "''")}', connections = '{connections_json.replace("'", "''")}' WHERE id = '{WORKFLOW_ID}';
+UPDATE workflow_history SET nodes = '{nodes_json.replace("'", "''")}', connections = '{connections_json.replace("'", "''")}' WHERE "workflowId" = '{WORKFLOW_ID}';
 """
     cmd = ["docker", "exec", "-i", "shared-postgres", "psql", "-U", "n8n_user", "-d", "n8n"]
     res = subprocess.run(cmd, input=psql_script, capture_output=True, text=True)
@@ -120,14 +112,25 @@ EXECUTE update_wf ('{nodes_json.replace("'", "''")}', '{connections_json.replace
         print(f"Error updating database: {res.stderr}", file=sys.stderr)
         sys.exit(1)
 
-    print("[SUCCESS] Database updated successfully.")
+    print("[SUCCESS] Database updated successfully in workflow_entity and workflow_history.")
 
-    # Toggle workflow active state to ensure n8n reloads the workflow in memory
-    toggle_off = ["docker", "exec", "shared-postgres", "psql", "-U", "n8n_user", "-d", "n8n", "-c", f"UPDATE workflow_entity SET active = false WHERE id = '{WORKFLOW_ID}';"]
-    toggle_on = ["docker", "exec", "shared-postgres", "psql", "-U", "n8n_user", "-d", "n8n", "-c", f"UPDATE workflow_entity SET active = true WHERE id = '{WORKFLOW_ID}';"]
-    subprocess.run(toggle_off, capture_output=True, text=True)
-    subprocess.run(toggle_on, capture_output=True, text=True)
-    print("[TOGGLE] Workflow active state toggled to reload in n8n.")
+    # Toggle workflow active state via API endpoints or DB if API fails
+    try:
+        cmd_key = ["docker", "exec", "shared-postgres", "psql", "-U", "n8n_user", "-d", "n8n", "-Atc", "SELECT \"apiKey\" FROM user_api_keys;"]
+        keys = subprocess.run(cmd_key, capture_output=True, text=True, check=True).stdout.splitlines()
+        for key in keys:
+            if not key.strip(): continue
+            req_deact = urllib.request.Request(f"http://localhost:5678/api/v1/workflows/{WORKFLOW_ID}/deactivate", method="POST", headers={"X-N8N-API-KEY": key.strip()})
+            try:
+                with urllib.request.urlopen(req_deact):
+                    req_act = urllib.request.Request(f"http://localhost:5678/api/v1/workflows/{WORKFLOW_ID}/activate", method="POST", headers={"X-N8N-API-KEY": key.strip()})
+                    with urllib.request.urlopen(req_act):
+                        print("[TOGGLE] Workflow deactivated and reactivated via n8n REST API.")
+                        break
+            except Exception:
+                continue
+    except Exception as e:
+        print(f"[TOGGLE WARNING] API toggle failed: {e}", file=sys.stderr)
 
 if __name__ == "__main__":
     main()
