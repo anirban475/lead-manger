@@ -140,3 +140,11 @@ The only way to trigger a live workflow reload from a script is via the n8n REST
 
 *(Note: The regression introduced in commit `2b18006` occurred because `urllib` was never imported. A bare `except` block inside the loop swallowed the resulting `NameError`, causing the script to report `[SUCCESS]` and exit `0` without ever reloading n8n or performing a fallback).*
 
+## Bulk Save & Workflow Mutation Learnings (`save_leads_bulk`)
+
+- **`save_leads_bulk` Tool**: Exists on the `lead-scraper` MCP workflow (`zUbadDjZ9PfMR8av`). It accepts a JSON array of lead objects in a single `rows` argument (up to 200 per call) and executes a single bulk SQL upsert with `DISTINCT ON (company_key)`.
+- **Exit Code 2 from Workflow Scripts**: Exit code `2` means changes were written to the Postgres database (`workflow_entity` / `workflow_history`), but the change is **NOT live in memory** because toggling `workflow_entity.active` in the DB does not reload n8n in memory.
+- **Acceptance Criteria**: Acceptance for any n8n node mutation requires verifying a fresh-session `tools/list` on the live MCP endpoint plus performing a real write test, never relying solely on a database row or static check.
+- **Capture Integrity**: A pasted "raw" capture is not evidence unless it is the actual bytes returned. Model outputs must never reconstruct or invent tool entries; verification requires authentic raw wire bytes.
+
+
