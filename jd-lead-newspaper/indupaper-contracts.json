@@ -1,0 +1,629 @@
+[
+  {
+    "paper_name": "Amar Ujala",
+    "indupaper_slug": "amar-ujala",
+    "page_url": "https://www.indupaper.com/amar-ujala.html",
+    "status": "working",
+    "method": "POST",
+    "endpoint": "https://d1h47qec6ptx2j.cloudfront.net/amarujala/v2/download",
+    "param_style": "json_body",
+    "params_template": {
+      "year": "2026",
+      "month": "08",
+      "day": "17",
+      "city": "delhi-city",
+      "type": "main"
+    },
+    "regions_found": [
+      "delhi-city",
+      "agra-city",
+      "lucknow-city",
+      "kanpur-city",
+      "varanasi-city",
+      "allahabad-city",
+      "meerut-city",
+      "dehradun-city",
+      "bareilly-city",
+      "gorakhpur-city"
+    ],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": "delhi-city",
+      "http_status": 200,
+      "notes": "Returned full 20-page edition HTML content with images (also supports v1 one-page-at-a-time via POST /amarujala/v1/download)."
+    }
+  },
+  {
+    "paper_name": "Rajasthan Patrika",
+    "indupaper_slug": "rajasthan-patrika",
+    "page_url": "https://www.indupaper.com/rajasthan-patrika.html",
+    "status": "working",
+    "method": "POST",
+    "endpoint": "https://d1h47qec6ptx2j.cloudfront.net/rjpatrika/v1/download",
+    "param_style": "query_string",
+    "params_template": {
+      "state": "rajasthan",
+      "city": "jaipur-city",
+      "year": "2026",
+      "month": "08",
+      "date": "17"
+    },
+    "regions_found": [
+      "jaipur-city",
+      "jodhpur",
+      "udaipur",
+      "kota",
+      "bikaner",
+      "ajmer",
+      "alwar",
+      "bhilwara",
+      "sikar",
+      "sri-ganganagar"
+    ],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": "jaipur-city",
+      "http_status": 200,
+      "notes": "Returned full 28-page edition in a single POST response with query string params."
+    }
+  },
+  {
+    "paper_name": "Dainik Jagran",
+    "indupaper_slug": "dainik-jagran",
+    "page_url": "https://www.indupaper.com/dainik-jagran.html",
+    "status": "working",
+    "method": "GET",
+    "endpoint": "https://d1h47qec6ptx2j.cloudfront.net/dainikjagran/v1/download",
+    "param_style": "query_string",
+    "params_template": {
+      "citySlug": "262-National",
+      "day": "17",
+      "month": "Aug",
+      "year": "2026"
+    },
+    "regions_found": [
+      "262-National",
+      "delhi",
+      "lucknow",
+      "kanpur",
+      "patna",
+      "varanasi",
+      "prayagraj",
+      "gorakhpur",
+      "agra",
+      "meerut"
+    ],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": "262-National",
+      "http_status": 200,
+      "notes": "Returned full 14-page edition; month uses three-letter abbreviation (Aug)."
+    }
+  },
+  {
+    "paper_name": "Dainik Bhaskar",
+    "indupaper_slug": "dainik-bhaskar",
+    "page_url": "https://www.indupaper.com/dainik-bhaskar.html",
+    "status": "broken",
+    "method": null,
+    "endpoint": null,
+    "param_style": null,
+    "params_template": {},
+    "regions_found": [],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": null,
+      "http_status": null,
+      "notes": "Broken on InduPaper side: dainik-bhaskar.js 404s, window.onload throws ReferenceError (defaultDainikBhaskarOption is not defined), view button never fires. Recovered preconnect domain d39ihfvw4fm8k.cloudfront.net."
+    }
+  },
+  {
+    "paper_name": "Times of India",
+    "indupaper_slug": "times-of-india",
+    "page_url": "https://www.indupaper.com/times-of-india.html",
+    "status": "working",
+    "method": "GET",
+    "endpoint": "https://d1h47qec6ptx2j.cloudfront.net/toi/v2/download",
+    "param_style": "query_string",
+    "params_template": {
+      "citySlug": "delhi",
+      "day": "17",
+      "month": "08",
+      "year": "2026"
+    },
+    "regions_found": [
+      "ahmedabad",
+      "bangalore",
+      "bhopal",
+      "chandigarh",
+      "chennai",
+      "delhi",
+      "goa",
+      "hyderabad",
+      "jaipur",
+      "kochi",
+      "kolkata",
+      "lucknow",
+      "mumbai",
+      "pune"
+    ],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": "delhi",
+      "http_status": 200,
+      "notes": "Returned full 14-page edition HTML content with images."
+    }
+  },
+  {
+    "paper_name": "Hindustan Times",
+    "indupaper_slug": "hindustan-times",
+    "page_url": "https://www.indupaper.com/hindustan-times.html",
+    "status": "working",
+    "method": "GET",
+    "endpoint": "https://d1h47qec6ptx2j.cloudfront.net/hindustantimes/v2/download",
+    "param_style": "query_string",
+    "params_template": {
+      "citySlug": "delhi",
+      "editionDate": "2026-08-17"
+    },
+    "regions_found": [
+      "delhi",
+      "mumbai",
+      "chandigarh",
+      "lucknow",
+      "patna",
+      "ranchi",
+      "kolkata"
+    ],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": "delhi",
+      "http_status": 200,
+      "notes": "Returned full 22-page edition HTML content with images; regions loaded dynamically from /hindustantimes/v2/cities."
+    }
+  },
+  {
+    "paper_name": "The Hindu",
+    "indupaper_slug": "the-hindu",
+    "page_url": "https://www.indupaper.com/the-hindu.html",
+    "status": "broken",
+    "method": null,
+    "endpoint": null,
+    "param_style": null,
+    "params_template": {},
+    "regions_found": [],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": null,
+      "http_status": null,
+      "notes": "Not implemented on InduPaper side: form and script tags commented out in HTML, thehindu.js 404s, page marked coming soon."
+    }
+  },
+  {
+    "paper_name": "Economic Times",
+    "indupaper_slug": "economic-times",
+    "page_url": "https://www.indupaper.com/economic-times.html",
+    "status": "working",
+    "method": "GET",
+    "endpoint": "https://d1h47qec6ptx2j.cloudfront.net/economictimes/v2/download",
+    "param_style": "query_string",
+    "params_template": {
+      "citySlug": "delhi",
+      "day": "17",
+      "month": "08",
+      "year": "2026"
+    },
+    "regions_found": [
+      "bangalore",
+      "delhi",
+      "kolkata",
+      "mumbai"
+    ],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": "delhi",
+      "http_status": 200,
+      "notes": "Returned full 14-page edition HTML content with images."
+    }
+  },
+  {
+    "paper_name": "The New Indian Express",
+    "indupaper_slug": "the-new-indian-express",
+    "page_url": "https://www.indupaper.com/the-new-indian-express.html",
+    "status": "broken",
+    "method": null,
+    "endpoint": null,
+    "param_style": null,
+    "params_template": {},
+    "regions_found": [],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": null,
+      "http_status": null,
+      "notes": "Not implemented on InduPaper side: form and script tags commented out in HTML, newindianexpress.js 404s, page marked coming soon."
+    }
+  },
+  {
+    "paper_name": "Mirror",
+    "indupaper_slug": "mirror",
+    "page_url": "https://www.indupaper.com/mirror.html",
+    "status": "working",
+    "method": "GET",
+    "endpoint": "https://d1h47qec6ptx2j.cloudfront.net/mirror/v2/download",
+    "param_style": "query_string",
+    "params_template": {
+      "citySlug": "mumbai",
+      "day": "17",
+      "month": "08",
+      "year": "2026"
+    },
+    "regions_found": [
+      "bangalore",
+      "mumbai",
+      "pune"
+    ],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": "mumbai",
+      "http_status": 200,
+      "notes": "Returned full edition HTML content with images."
+    }
+  },
+  {
+    "paper_name": "Hindustan",
+    "indupaper_slug": "hindustan",
+    "page_url": "https://www.indupaper.com/hindustan.html",
+    "status": "working",
+    "method": "GET",
+    "endpoint": "https://d1h47qec6ptx2j.cloudfront.net/hindustan/v2/download",
+    "param_style": "query_string",
+    "params_template": {
+      "editionSlug": "delhi",
+      "editionDate": "2026-08-17"
+    },
+    "regions_found": [
+      "delhi",
+      "bihar",
+      "jharkhand",
+      "uttar-pradesh",
+      "uttarakhand"
+    ],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": "delhi",
+      "http_status": 200,
+      "notes": "Returned full edition HTML content with images; states and sub-editions loaded dynamically from /hindustan/v2/states."
+    }
+  },
+  {
+    "paper_name": "Haribhoomi",
+    "indupaper_slug": "haribhoomi",
+    "page_url": "https://www.indupaper.com/haribhoomi.html",
+    "status": "working",
+    "method": "GET",
+    "endpoint": "https://d1h47qec6ptx2j.cloudfront.net/haribhoomi/v1/download",
+    "param_style": "query_string",
+    "params_template": {
+      "categoryId": "9",
+      "day": "17",
+      "month": "08",
+      "year": "2026"
+    },
+    "regions_found": [
+      "9",
+      "12",
+      "13",
+      "14",
+      "15",
+      "16",
+      "17",
+      "18",
+      "19",
+      "36",
+      "46",
+      "47",
+      "61",
+      "65",
+      "74"
+    ],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": "9",
+      "http_status": 200,
+      "notes": "Returned full 12-page edition HTML content with images."
+    }
+  },
+  {
+    "paper_name": "Prabhat Khabar",
+    "indupaper_slug": "prabhat-khabar",
+    "page_url": "https://www.indupaper.com/prabhat-khabar.html",
+    "status": "working",
+    "method": "GET",
+    "endpoint": "https://d1h47qec6ptx2j.cloudfront.net/prabhatkhabar/v1/download",
+    "param_style": "query_string",
+    "params_template": {
+      "editionId": "ranchi-city",
+      "editionDate": "2026-08-17"
+    },
+    "regions_found": [
+      "ranchi-city",
+      "jamshedpur-city",
+      "dhanbad-city",
+      "patna-city",
+      "muzaffarpur-city",
+      "kolkata-city",
+      "deoghar-city",
+      "bhagalpur-city",
+      "gaya-city"
+    ],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": "ranchi-city",
+      "http_status": 200,
+      "notes": "Returned full edition HTML content with images; editionDate formatted as YYYY-MM-DD."
+    }
+  },
+  {
+    "paper_name": "Maharashtra Times",
+    "indupaper_slug": "maharashtra-times",
+    "page_url": "https://www.indupaper.com/maharashtra-times.html",
+    "status": "working",
+    "method": "GET",
+    "endpoint": "https://d1h47qec6ptx2j.cloudfront.net/maharashtratimes/v2/download",
+    "param_style": "query_string",
+    "params_template": {
+      "citySlug": "mumbai",
+      "day": "17",
+      "month": "08",
+      "year": "2026"
+    },
+    "regions_found": [
+      "chhatrapati-sambhajinagar",
+      "mumbai",
+      "nagpur",
+      "nashik",
+      "pune"
+    ],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": "mumbai",
+      "http_status": 200,
+      "notes": "Returned full 12-page edition HTML content with images."
+    }
+  },
+  {
+    "paper_name": "Malayala Manorama",
+    "indupaper_slug": "malayala-manorama",
+    "page_url": "https://www.indupaper.com/malayala-manorama.html",
+    "status": "working",
+    "method": "GET",
+    "endpoint": "https://d1h47qec6ptx2j.cloudfront.net/manorama/v1/download",
+    "param_style": "query_string",
+    "params_template": {
+      "editionid": "1",
+      "editiondate": "17/08/2026"
+    },
+    "regions_found": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "12",
+      "13",
+      "14",
+      "18",
+      "19",
+      "20",
+      "21"
+    ],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": "1",
+      "http_status": 200,
+      "notes": "Returned full 12-page edition HTML content with images; editiondate uses DD/MM/YYYY format."
+    }
+  },
+  {
+    "paper_name": "Kannada Prabha",
+    "indupaper_slug": "kannada-prabha",
+    "page_url": "https://www.indupaper.com/kannada-prabha.html",
+    "status": "working",
+    "method": "GET",
+    "endpoint": "https://d1h47qec6ptx2j.cloudfront.net/kannadaprabha/v1/download",
+    "param_style": "query_string",
+    "params_template": {
+      "editionId": "KANPRABHA_BG",
+      "editionDate": "2026-08-17"
+    },
+    "regions_found": [
+      "KANPRABHA_BG",
+      "KANPRABHA_HL",
+      "KANPRABHA_GB",
+      "KANPRABHA_BN",
+      "KANPRABHA_CTD",
+      "KANPRABHA_MN"
+    ],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": "KANPRABHA_BG",
+      "http_status": 200,
+      "notes": "Returned full 14-page edition HTML content with images; editions loaded dynamically from /kannadaprabha/v1/cities."
+    }
+  },
+  {
+    "paper_name": "Aaj Ka Anand",
+    "indupaper_slug": "aaj-ka-anand",
+    "page_url": "https://www.indupaper.com/aaj-ka-anand.html",
+    "status": "working",
+    "method": "GET",
+    "endpoint": "https://d1h47qec6ptx2j.cloudfront.net/aajkaanand/v1/download",
+    "param_style": "query_string",
+    "params_template": {
+      "citySlug": "Ppage",
+      "day": "17",
+      "month": "08",
+      "year": "2026"
+    },
+    "regions_found": [
+      "Mpage",
+      "Ppage"
+    ],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": "Ppage",
+      "http_status": 200,
+      "notes": "Returned full 16-page edition HTML content with images."
+    }
+  },
+  {
+    "paper_name": "Ahmedabad Mirror",
+    "indupaper_slug": "ahmedabad-mirror",
+    "page_url": "https://www.indupaper.com/ahmedabad-mirror.html",
+    "status": "working",
+    "method": "GET",
+    "endpoint": "https://d1h47qec6ptx2j.cloudfront.net/ahmedabadmirror/v1/download",
+    "param_style": "query_string",
+    "params_template": {
+      "day": "17",
+      "month": "08",
+      "year": "2026",
+      "page": "1"
+    },
+    "regions_found": [
+      "Ahmedabad"
+    ],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": "Ahmedabad",
+      "http_status": 200,
+      "notes": "Returned page 1 HTML content with 20 total pages (one call per page)."
+    }
+  },
+  {
+    "paper_name": "Daily Excelsior",
+    "indupaper_slug": "daily-excelsior",
+    "page_url": "https://www.indupaper.com/daily-excelsior.html",
+    "status": "working",
+    "method": "GET",
+    "endpoint": "https://d1h47qec6ptx2j.cloudfront.net/dailyexcelsior/v1/download",
+    "param_style": "query_string",
+    "params_template": {
+      "editionid": "1",
+      "editiondate": "17/08/2026"
+    },
+    "regions_found": [
+      "1"
+    ],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": "1",
+      "http_status": 200,
+      "notes": "Returned full edition HTML content with images; editiondate uses DD/MM/YYYY format."
+    }
+  },
+  {
+    "paper_name": "Dainik Navajyoti",
+    "indupaper_slug": "dainik-navajyoti",
+    "page_url": "https://www.indupaper.com/dainik-navajyoti.html",
+    "status": "working",
+    "method": "GET",
+    "endpoint": "https://d1h47qec6ptx2j.cloudfront.net/dainiknavajyoti/v1/download",
+    "param_style": "query_string",
+    "params_template": {
+      "categoryId": "14",
+      "day": "17",
+      "month": "08",
+      "year": "2026"
+    },
+    "regions_found": [
+      "14",
+      "20",
+      "15",
+      "16",
+      "17",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "12",
+      "13",
+      "18",
+      "19",
+      "21",
+      "22",
+      "23",
+      "24",
+      "25",
+      "26",
+      "27",
+      "28",
+      "29",
+      "30",
+      "31",
+      "32",
+      "33",
+      "34",
+      "35",
+      "36",
+      "37",
+      "38",
+      "39",
+      "40"
+    ],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": "14",
+      "http_status": 200,
+      "notes": "Returned full 13-page edition HTML content with images."
+    }
+  },
+  {
+    "paper_name": "Inext",
+    "indupaper_slug": "inext",
+    "page_url": "https://www.indupaper.com/inext.html",
+    "status": "working",
+    "method": "GET",
+    "endpoint": "https://d1h47qec6ptx2j.cloudfront.net/inext/v1/download",
+    "param_style": "query_string",
+    "params_template": {
+      "editionId": "6",
+      "day": "17",
+      "month": "08",
+      "year": "2026"
+    },
+    "regions_found": [
+      "6",
+      "21",
+      "19",
+      "15",
+      "17",
+      "2",
+      "18",
+      "3",
+      "4",
+      "1",
+      "16",
+      "20"
+    ],
+    "test": {
+      "date_tested": "2026-08-17",
+      "region_tested": "6",
+      "http_status": 200,
+      "notes": "Returned full 14-page edition HTML content with images."
+    }
+  }
+]
