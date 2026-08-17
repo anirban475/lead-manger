@@ -53,7 +53,9 @@ Performs OCR extraction on an uploaded image.
   }
   ```
 
-## Service Management (PM2)
+## Service Management (PM2 & Gunicorn)
+
+The service runs under PM2 launching Gunicorn with 2 workers and 60s request timeout.
 
 ```bash
 # Start service
