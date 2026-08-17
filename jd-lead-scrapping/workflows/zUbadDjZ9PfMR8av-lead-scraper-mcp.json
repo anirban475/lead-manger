@@ -1,0 +1,464 @@
+{
+  "name": "Indeed Scraper MCP",
+  "nodes": [
+    {
+      "id": "81d30d92-9a83-4559-a7f7-e5a55d6428bb",
+      "name": "MCP Server Trigger",
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "position": [
+        520,
+        304
+      ],
+      "webhookId": "8e28d638-2ff6-44eb-a5cd-67b63fbc2a8f",
+      "parameters": {
+        "path": "lead-scraper"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "9ee4a195-b945-4910-a1a4-9ede78457ab8",
+      "name": "run_indeed_scrape",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "position": [
+        -48,
+        528
+      ],
+      "parameters": {
+        "url": "https://api.apify.com/v2/actors/BIeK7ZcYUrdxDgOEQ/run-sync-get-dataset-items",
+        "method": "POST",
+        "options": {
+          "timeout": 300000
+        },
+        "jsonBody": "={{ JSON.stringify({ keyword: $fromAI(\"keyword\", \"Job title search query, boolean supported\", \"string\"), location: $fromAI(\"location\", \"City or state in India, e.g. Gujarat\", \"string\"), country: \"IN\", maxItems: $fromAI(\"maxItems\", \"Max results, keep 50 or under\", \"number\", 50), fromDays: String($fromAI(\"fromDays\", \"Only postings from last N days\", \"string\", \"7\")), sort: \"date\", searchMode: \"basic\", proxyConfig: { useApifyProxy: true, apifyProxyGroups: [\"RESIDENTIAL\"] } }) }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "toolDescription": "Scrape Indeed India job postings via Apify (kaix/indeed-scraper). Inputs: keyword (boolean titles supported), location, maxItems (<=50), fromDays."
+      },
+      "typeVersion": 4.4
+    },
+    {
+      "id": "cb6e3fed-669d-4a8e-a706-df313ab3984b",
+      "name": "run_actor",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "position": [
+        80,
+        528
+      ],
+      "parameters": {
+        "url": "=https://api.apify.com/v2/actors/{{ $fromAI(\"actorId\", \"Apify actor ID, e.g. memo23~naukri-scraper\", \"string\") }}/run-sync-get-dataset-items",
+        "method": "POST",
+        "options": {
+          "timeout": 300000
+        },
+        "jsonBody": "={{ $fromAI(\"inputJson\", \"Full JSON input object for the actor as a string\", \"string\") }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "toolDescription": "DEPRECATED - use start_actor + get_run_status + get_dataset_items (async, no timeout ceiling). Legacy synchronous runner via run-sync-get-dataset-items, capped by the 60s proxy timeout to ~12 rows when fetchDetails is on. Primary Naukri actor is blackfalcondata~naukri-jobs-feed (id xYOP3UjaS8w38lWM7); memo23~naukri-scraper (id EYXvM0o2lS7rYzgey) is fallback. Inputs: actorId, inputJson."
+      },
+      "typeVersion": 4.4
+    },
+    {
+      "id": "fb4af9a4-77f8-4955-9b32-2987aa271691",
+      "name": "get_company_size",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "position": [
+        208,
+        528
+      ],
+      "parameters": {
+        "url": "https://n8n.amatec.in/webhook/company-size",
+        "method": "POST",
+        "options": {
+          "timeout": 30000
+        },
+        "jsonBody": "={{ JSON.stringify({ name: $fromAI(\"name\", \"Company name to look up\", \"string\"), state: $fromAI(\"state\", \"Registered state or city of the lead for match validation\", \"string\", \"\") }) }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "toolDescription": "Get an Indian company EPFO employee headcount by name for the size gate. Inputs: name, state. Returns { matched, low_confidence, cin, employees, employees_as_of, status, registered_state }. Trust employees ONLY when matched is true and low_confidence is false; else unknown. The over-500 drop stays in the radar."
+      },
+      "typeVersion": 4.4
+    },
+    {
+      "id": "5588c976-60dd-411b-8d70-d9ffecd62829",
+      "name": "save_leads",
+      "type": "n8n-nodes-base.postgresTool",
+      "position": [
+        336,
+        528
+      ],
+      "parameters": {
+        "query": "INSERT INTO leads (company_key, company_name, industry, size, city, roles_count, role_titles, posted_date, job_urls, contact_phone, contact_email, contact_source, company_website, score, tier, source_query, apply_count, role_group, industry_label, contact_name, contact_title, contact_linkedin, brand) VALUES ($1, $2, $3, $4, $5, NULLIF($6,'')::int, CASE WHEN $7 LIKE '%|%' THEN string_to_array($7, '|') ELSE string_to_array($7, ',') END, NULLIF($8,'')::date, string_to_array($9, ','), $10, $11, $12, $13, NULLIF($14,'')::int, $15, $16, NULLIF($17,'')::int, $18, $19, $20, $21, $22, $23) ON CONFLICT (company_key) DO UPDATE SET roles_count = EXCLUDED.roles_count, role_titles = EXCLUDED.role_titles, posted_date = EXCLUDED.posted_date, job_urls = EXCLUDED.job_urls, score = EXCLUDED.score, tier = EXCLUDED.tier, source_query = COALESCE(leads.source_query, EXCLUDED.source_query), apply_count = EXCLUDED.apply_count, role_group = EXCLUDED.role_group, industry_label = EXCLUDED.industry_label, contact_name = COALESCE(leads.contact_name, EXCLUDED.contact_name), contact_title = COALESCE(leads.contact_title, EXCLUDED.contact_title), contact_linkedin = COALESCE(leads.contact_linkedin, EXCLUDED.contact_linkedin), updated_at = now() RETURNING company_key, status",
+        "options": {
+          "queryReplacement": "={{ [$fromAI(\"company_key\", \"Unique company key from scrape\", \"string\"), $fromAI(\"company_name\", \"Company name\", \"string\"), $fromAI(\"industry\", \"Raw industry\", \"string\"), $fromAI(\"size\", \"Employee size range\", \"string\"), $fromAI(\"city\", \"City\", \"string\"), $fromAI(\"roles_count\", \"Number of active postings\", \"string\"), $fromAI(\"role_titles\", \"Role titles comma separated\", \"string\"), $fromAI(\"posted_date\", \"Most recent posted date YYYY-MM-DD\", \"string\"), $fromAI(\"job_urls\", \"Job URLs comma separated\", \"string\"), $fromAI(\"contact_phone\", \"Phone or empty\", \"string\"), $fromAI(\"contact_email\", \"Email or empty\", \"string\"), $fromAI(\"contact_source\", \"jd, website, apollo_org, apollo_person or pending\", \"string\"), $fromAI(\"company_website\", \"Website or empty\", \"string\"), $fromAI(\"score\", \"ICP score 0 to 100\", \"string\"), $fromAI(\"tier\", \"hot or warm\", \"string\"), $fromAI(\"source_query\", \"Query and location that found this company\", \"string\"), $fromAI(\"apply_count\", \"Total applicants across the roles from Naukri\", \"string\"), $fromAI(\"role_group\", \"Clean role bucket: quality, production, lab, microbiology, warehouse\", \"string\"), $fromAI(\"industry_label\", \"Clean industry word: pharma, chemical, nutra, food, manufacturing\", \"string\"), $fromAI(\"contact_name\", \"HR contact name if known else empty\", \"string\"), $fromAI(\"contact_title\", \"HR contact title if known else empty\", \"string\"), $fromAI(\"contact_linkedin\", \"HR or founder LinkedIn profile URL, or empty\", \"string\"), $fromAI(\"brand\",\"amatec or jobdrive\",\"string\")] }}"
+        },
+        "operation": "executeQuery",
+        "descriptionType": "manual",
+        "toolDescription": "Upsert ONE Jobdrive lead per company. Upserts on company_key, never overwrites an existing status. ALWAYS pass brand=jobdrive explicitly. Writes apply_count, role_group, industry_label and contact fields."
+      },
+      "typeVersion": 2.6
+    },
+    {
+      "id": "5e379a17-1418-4c83-8a43-8e846ac50079",
+      "name": "get_leads",
+      "type": "n8n-nodes-base.postgresTool",
+      "position": [
+        464,
+        528
+      ],
+      "parameters": {
+        "query": "SELECT company_key, company_name, city, industry_label, role_group, roles_count, apply_count, contact_name, contact_title, contact_phone, contact_email, company_website, contact_linkedin, score, tier, status, source_query, next_action, next_action_date, mystrika_synced, last_disposition, call_count FROM leads WHERE brand = 'jobdrive' AND ($1 = 'all' OR status = $1) ORDER BY score DESC LIMIT 2000",
+        "options": {
+          "queryReplacement": "={{ $fromAI(\"status\", \"Lead status filter or all\", \"string\", \"all\") }}"
+        },
+        "operation": "executeQuery",
+        "descriptionType": "manual",
+        "toolDescription": "Read Jobdrive leads ONLY (brand=jobdrive hardcoded, Amatec rows never returned). Call FIRST every run to dedupe and to build the conversion table from status/next_action/mystrika_synced. Input: status filter or \"all\"."
+      },
+      "typeVersion": 2.6
+    },
+    {
+      "id": "83ee64d1-4e5d-46a4-87e9-37164c53d8d0",
+      "name": "log_run",
+      "type": "n8n-nodes-base.postgresTool",
+      "position": [
+        592,
+        528
+      ],
+      "parameters": {
+        "query": "INSERT INTO radar_runs (queries, items_pulled, hot, warm, dropped, credits_est, next_plan) VALUES ($1::jsonb, $2, $3, $4, $5, $6, $7) RETURNING id, run_date",
+        "options": {
+          "queryReplacement": "={{ $fromAI(\"queries\", \"JSON array, one object per query with q, loc, items, hot, warm, dropped, credits\", \"string\") }},{{ $fromAI(\"items_pulled\", \"Total items scraped\", \"number\") }},{{ $fromAI(\"hot\", \"Hot lead count\", \"number\") }},{{ $fromAI(\"warm\", \"Warm lead count\", \"number\") }},{{ $fromAI(\"dropped\", \"Dropped count\", \"number\") }},{{ $fromAI(\"credits_est\", \"Estimated credits USD\", \"number\") }},{{ $fromAI(\"next_plan\", \"Next run plan\", \"string\") }}"
+        },
+        "operation": "executeQuery",
+        "descriptionType": "manual",
+        "toolDescription": "Write this Jobdrive radar run to radar_runs. Call ONCE at end of run with per-query yield (q, loc, items, hot, warm, dropped, credits) and the next plan. brand defaults to jobdrive."
+      },
+      "typeVersion": 2.6
+    },
+    {
+      "id": "f18a5bd4-5d98-4e78-a200-006b3d59f0e8",
+      "name": "get_run_history",
+      "type": "n8n-nodes-base.postgresTool",
+      "position": [
+        720,
+        528
+      ],
+      "parameters": {
+        "query": "SELECT run_date, queries, items_pulled, hot, warm, dropped, credits_est, next_plan FROM radar_runs ORDER BY id DESC LIMIT $1",
+        "options": {
+          "queryReplacement": "={{ $fromAI(\"limit\", \"How many recent runs to read\", \"number\", 5) }}"
+        },
+        "operation": "executeQuery",
+        "descriptionType": "manual",
+        "toolDescription": "Past radar runs, newest first. NOTE: mixes Jobdrive and Amatec; read next_plan text to tell whose run it was. Input: limit."
+      },
+      "typeVersion": 2.6
+    },
+    {
+      "id": "1fdbb3c7-6c52-462e-8194-5ea479b70583",
+      "name": "get_query_yield",
+      "type": "n8n-nodes-base.postgresTool",
+      "position": [
+        848,
+        528
+      ],
+      "parameters": {
+        "query": "SELECT source_query, count(*) AS companies, count(*) FILTER (WHERE tier='hot') AS hot, round(avg(score)) AS avg_score FROM leads WHERE source_query IS NOT NULL GROUP BY source_query ORDER BY hot DESC, companies DESC",
+        "options": {
+          "queryReplacement": ""
+        },
+        "operation": "executeQuery",
+        "descriptionType": "manual",
+        "toolDescription": "Per source_query SCRAPE yield across BOTH brands (no brand filter): companies, hot, avg_score. Match only your own Jobdrive source_query strings, ignore Amatec \"role | geo\" rows. Scrape quality only, NOT conversion. No input."
+      },
+      "typeVersion": 2.6
+    },
+    {
+      "id": "1c1dd045-fc33-4d42-b6ea-031d05f7ff4d",
+      "name": "start_actor",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "position": [
+        976,
+        528
+      ],
+      "parameters": {
+        "url": "=https://api.apify.com/v2/acts/{{ $fromAI(\"actorId\", \"Apify actor ID, e.g. blackfalcondata~naukri-jobs-feed or xYOP3UjaS8w38lWM7\", \"string\") }}/runs",
+        "method": "POST",
+        "options": {
+          "timeout": 30000
+        },
+        "jsonBody": "={{ $fromAI(\"inputJson\", \"Full JSON input object for the actor as a string\", \"string\") }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "toolDescription": "ASYNC step 1 of 3. Start an Apify actor run and return immediately, do NOT wait. Primary Naukri actor blackfalcondata~naukri-jobs-feed (id xYOP3UjaS8w38lWM7); memo23~naukri-scraper (EYXvM0o2lS7rYzgey) fallback. Inputs: actorId, inputJson (full actor input object as a JSON string). Returns run JSON with data.id (runId) and data.defaultDatasetId. Next poll get_run_status(runId) until SUCCEEDED then get_dataset_items(datasetId)."
+      },
+      "typeVersion": 4.4
+    },
+    {
+      "id": "b267b4eb-e993-4629-835d-7a370cb96bed",
+      "name": "get_run_status",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "position": [
+        1104,
+        528
+      ],
+      "parameters": {
+        "url": "=https://api.apify.com/v2/actor-runs/{{ $fromAI(\"runId\", \"The run id returned by start_actor\", \"string\") }}",
+        "options": {
+          "timeout": 30000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "toolDescription": "ASYNC step 2 of 3. Check an Apify run status, returns fast. Input runId from start_actor. Returns data.status (READY, RUNNING, SUCCEEDED, FAILED, ABORTED, TIMED-OUT) and data.defaultDatasetId. Poll until SUCCEEDED, cap ~40 tries. On FAILED/ABORTED/TIMED-OUT stop and report, never fake an empty success. When SUCCEEDED call get_dataset_items(datasetId)."
+      },
+      "typeVersion": 4.4
+    },
+    {
+      "id": "15def294-f86d-4606-ad62-7eaf8eb6476e",
+      "name": "get_dataset_items",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "position": [
+        1232,
+        528
+      ],
+      "parameters": {
+        "url": "=https://api.apify.com/v2/datasets/{{ $fromAI(\"datasetId\", \"The defaultDatasetId from the run\", \"string\") }}/items?clean=true&format=json",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "toolDescription": "ASYNC step 3 of 3. Fetch rows from a finished run dataset. Input datasetId (defaultDatasetId from start_actor/get_run_status). Call ONLY after get_run_status shows SUCCEEDED. Returns the items array. Beyond 1000 rows page with &offset= and &limit=."
+      },
+      "typeVersion": 4.4
+    },
+    {
+      "id": "35b4eb37-6b9b-4b54-9081-7225459c8ec8",
+      "name": "fetch_newspaper_ads",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "position": [
+        1360,
+        528
+      ],
+      "parameters": {
+        "url": "https://n8n.amatec.in/webhook/newspaper-ads",
+        "method": "POST",
+        "options": {
+          "timeout": 60000
+        },
+        "jsonBody": "={{ JSON.stringify({ slug: $fromAI(\"slug\", \"Ads2Publish publication slug, e.g. times-of-india or dainik-jagran\", \"string\") }) }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "toolDescription": "Fetch one day's recruitment ads for a single publication from Ads2Publish, parsed server-side from raw HTML so no ads are lost. Input: slug (e.g. times-of-india, dainik-jagran, eenadu). Returns classifiedCount, displayCount, highestAdIndex, missingIndices (should always be empty; a non-empty value means the source itself skipped an ad number) and ads[] with adType, adIndex, body, category (full path), email, phone. Use this instead of WebFetch, which silently drops ads."
+      },
+      "typeVersion": 4.4
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO leads (company_key, company_name, industry, size, city, roles_count, role_titles, posted_date, job_urls, contact_phone, contact_email, contact_source, company_website, score, tier, source_query, apply_count, role_group, industry_label, contact_name, contact_title, contact_linkedin, brand)\nSELECT DISTINCT ON (r.company_key)\n  r.company_key, r.company_name, r.industry, r.size, r.city,\n  NULLIF(r.roles_count,'')::int,\n  CASE WHEN r.role_titles LIKE '%|%' THEN string_to_array(r.role_titles,'|') ELSE string_to_array(r.role_titles,',') END,\n  NULLIF(r.posted_date,'')::date,\n  string_to_array(r.job_urls,','),\n  r.contact_phone, r.contact_email, r.contact_source, r.company_website,\n  NULLIF(r.score,'')::int, r.tier, r.source_query,\n  NULLIF(r.apply_count,'')::int,\n  r.role_group, r.industry_label, r.contact_name, r.contact_title, r.contact_linkedin, r.brand\nFROM jsonb_to_recordset($1::jsonb) AS r(\n  company_key text, company_name text, industry text, size text, city text,\n  roles_count text, role_titles text, posted_date text, job_urls text,\n  contact_phone text, contact_email text, contact_source text, company_website text,\n  score text, tier text, source_query text, apply_count text, role_group text,\n  industry_label text, contact_name text, contact_title text, contact_linkedin text, brand text)\nORDER BY r.company_key\nON CONFLICT (company_key) DO UPDATE SET\n  roles_count = EXCLUDED.roles_count, role_titles = EXCLUDED.role_titles,\n  posted_date = EXCLUDED.posted_date, job_urls = EXCLUDED.job_urls,\n  score = EXCLUDED.score, tier = EXCLUDED.tier,\n  source_query = COALESCE(leads.source_query, EXCLUDED.source_query),\n  apply_count = EXCLUDED.apply_count, role_group = EXCLUDED.role_group,\n  industry_label = EXCLUDED.industry_label,\n  contact_name = COALESCE(leads.contact_name, EXCLUDED.contact_name),\n  contact_title = COALESCE(leads.contact_title, EXCLUDED.contact_title),\n  contact_linkedin = COALESCE(leads.contact_linkedin, EXCLUDED.contact_linkedin),\n  updated_at = now()\nRETURNING company_key, status",
+        "options": {
+          "queryReplacement": "={{ $fromAI(\"rows\", \"JSON array of lead objects, each carrying the same 23 fields as save_leads. Keep to 200 per call.\", \"string\") }}"
+        },
+        "descriptionType": "manual",
+        "toolDescription": "Upsert MANY leads in ONE call. Input: rows, a JSON array of objects each carrying the same 23 fields as save_leads. Same upsert semantics on company_key, never overwrites an existing status. Duplicate company_key values inside one batch are collapsed. ALWAYS set brand explicitly on every object. Prefer this over save_leads whenever saving more than one company."
+      },
+      "name": "save_leads_bulk",
+      "type": "n8n-nodes-base.postgresTool",
+      "position": [
+        336,
+        656
+      ],
+      "typeVersion": 2.6,
+      "id": "858ff8a1-1226-4ac7-a4d0-d06fbddc9a5a"
+    },
+    {
+      "id": "7576dc27-3d68-458f-93c4-625e146c4110",
+      "name": "list_survivors",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "position": [
+        1488,
+        528
+      ],
+      "parameters": {
+        "url": "https://n8n.amatec.in/webhook/naukri-survivors",
+        "method": "POST",
+        "options": {
+          "timeout": 120000
+        },
+        "jsonBody": "={{ JSON.stringify({ keyword: $fromAI(\"keyword\", \"Job title or keyword to search on Naukri, e.g. QA Officer\", \"string\"), location: $fromAI(\"location\", \"Search location/state, e.g. Gujarat\", \"string\", \"Gujarat\"), max_results: $fromAI(\"max_results\", \"Maximum listings to scrape in pass 1, default 150\", \"number\", 150) }) }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "toolDescription": "Server-side two-pass scraper and filter for Naukri jobs. Runs cheap list scrape, filters consultants and stale postings (>29 days), dedups against existing Jobdrive leads in Postgres, enriches surviving job IDs with apply counts and contact details, and applies volume floor and velocity filters. Inputs: keyword (required string), location (optional string, default 'Gujarat'), max_results (optional number, default 150). Returns compact JSON array of qualified company objects matching the radar contract plus one meta object."
+      },
+      "typeVersion": 4.4
+    }
+  ],
+  "connections": {
+    "log_run": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_leads": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "run_actor": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "save_leads": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "start_actor": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_run_status": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_query_yield": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_run_history": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_company_size": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_dataset_items": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "run_indeed_scrape": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fetch_newspaper_ads": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "save_leads_bulk": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "list_survivors": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  }
+}

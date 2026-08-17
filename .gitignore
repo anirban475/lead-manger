@@ -24,4 +24,10 @@ yarn-error.log*
 # Scratch / QA artifacts
 csv-qa-test.csv
 *_backup.json
+.workflow-backups/
+# Python
+__pycache__/
+*.py[cod]
+*.py
+!jd-lead-newspaper/fix_role_titles_split.py
 

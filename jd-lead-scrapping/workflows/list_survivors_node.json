@@ -1,0 +1,21 @@
+{
+  "id": "7576dc27-3d68-458f-93c4-625e146c4110",
+  "name": "list_survivors",
+  "type": "n8n-nodes-base.httpRequestTool",
+  "position": [
+    1488,
+    528
+  ],
+  "parameters": {
+    "url": "https://n8n.amatec.in/webhook/naukri-survivors",
+    "method": "POST",
+    "options": {
+      "timeout": 120000
+    },
+    "jsonBody": "={{ JSON.stringify({ keyword: $fromAI(\"keyword\", \"Job title or keyword to search on Naukri, e.g. QA Officer\", \"string\"), location: $fromAI(\"location\", \"Search location/state, e.g. Gujarat\", \"string\", \"Gujarat\"), max_results: $fromAI(\"max_results\", \"Maximum listings to scrape in pass 1, default 150\", \"number\", 150) }) }}",
+    "sendBody": true,
+    "specifyBody": "json",
+    "toolDescription": "Server-side two-pass scraper and filter for Naukri jobs. Runs cheap list scrape, filters consultants and stale postings (>29 days), dedups against existing Jobdrive leads in Postgres, enriches surviving job IDs with apply counts and contact details, and applies volume floor and velocity filters. Inputs: keyword (required string), location (optional string, default 'Gujarat'), max_results (optional number, default 150). Returns compact JSON array of qualified company objects matching the radar contract plus one meta object."
+  },
+  "typeVersion": 4.4
+}

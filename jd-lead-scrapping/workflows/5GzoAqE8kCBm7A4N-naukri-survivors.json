@@ -1,0 +1,328 @@
+{
+  "name": "Naukri Two-Pass \u2014 List+Dedup (survivors)",
+  "nodes": [
+    {
+      "id": "b6fa021e-8231-4e2c-b902-4243b0aa93b8",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "280c143e-fba8-40a8-84fc-66a1fee294f2",
+      "parameters": {
+        "path": "naukri-survivors",
+        "options": {},
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      },
+      "typeVersion": 2.1
+    },
+    {
+      "id": "776aecb9-2374-4f01-8bc7-7457acf35eff",
+      "name": "Apify List",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        460,
+        300
+      ],
+      "parameters": {
+        "url": "https://api.apify.com/v2/acts/xYOP3UjaS8w38lWM7/run-sync-get-dataset-items",
+        "method": "POST",
+        "options": {
+          "timeout": 60000
+        },
+        "jsonBody": "={{ JSON.stringify({ keyword: $json.body.keyword, location: ($json.body.location || \"Gujarat\"), maxResults: ($json.body.max_results !== undefined ? parseInt($json.body.max_results, 10) : ($json.body.maxResults !== undefined ? parseInt($json.body.maxResults, 10) : 150)), fetchDetails: false, compact: false, postedBy: \"Company\", freshness: 30, sortBy: \"date\" }) }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "typeVersion": 4.4
+    },
+    {
+      "id": "39d04877-a6c8-42ea-9244-6021484f71ac",
+      "name": "Existing Leads",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        680,
+        300
+      ],
+      "parameters": {
+        "query": "SELECT company_key, company_name FROM leads WHERE brand = 'jobdrive'",
+        "options": {},
+        "operation": "executeQuery"
+      },
+      "executeOnce": true,
+      "typeVersion": 2.6
+    },
+    {
+      "id": "e3183135-55ef-4e98-9bb3-32ccd3e2ecfb",
+      "name": "Pass 1 Filter & Dedup",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        900,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const wb = $('Webhook').first()?.json?.body || {};\nconst min_apply_count = (wb.min_apply_count !== undefined) ? parseInt(wb.min_apply_count, 10) : ((wb.minApplyCount !== undefined) ? parseInt(wb.minApplyCount, 10) : 150);\nconst max_footer_days = (wb.max_footer_days !== undefined) ? parseInt(wb.max_footer_days, 10) : ((wb.maxFooterDays !== undefined) ? parseInt(wb.maxFooterDays, 10) : 29);\n\nlet listingItems = [];\ntry {\n  listingItems = $('Apify List').all().map(i => i.json);\n} catch (e) {\n  listingItems = [];\n}\n\nlistingItems = listingItems.filter(i => i && Object.keys(i).length > 0 && (i.companyName || i.jobId || i.error));\n\nif (!listingItems || listingItems.length === 0 || listingItems[0]?.error || listingItems[0]?.statusCode >= 400) {\n  const errMsg = listingItems?.[0]?.error || listingItems?.[0]?.message || 'Apify returned zero rows or failed for query';\n  return [{\n    json: {\n      has_error: true,\n      error: errMsg,\n      has_survivors: false,\n      jobIds: [],\n      pass1_map: {},\n      rows_listed: 0,\n      job_ids_requested: 0,\n      dropped: { consultant: 0, stale: 0, dedup: 0, no_name: 0, no_job_id: 0, intra_batch_duplicate: 0, below_floor: 0, velocity: 0 },\n      apify_cost_estimate_usd: 0,\n      min_apply_count,\n      max_footer_days\n    }\n  }];\n}\n\nconst norm = s => (s || '').toLowerCase()\n  .replace(/\\b(pvt|private|ltd|limited|llp|inc|co|company|industries|india)\\b/gi, '')\n  .replace(/[^a-z0-9]/g, '');\n\nlet existing = [];\ntry {\n  existing = $('Existing Leads').all().map(i => i.json);\n} catch (e) {\n  existing = [];\n}\nconst seen = new Set(existing.map(e => norm(e.company_name)).filter(Boolean));\n\nconst parseFooterDays = (fl) => {\n  const s = String(fl || '').trim().toLowerCase();\n  if (!s || s === 'just now' || s === 'today') return 0;\n  if (s === 'yesterday' || s === '1 day ago' || s === '1 days ago') return 1;\n  const m = s.match(/^(\\d+)\\s+day/);\n  if (m) return parseInt(m[1], 10);\n  if (s.includes('30+')) return 30;\n  return 30;\n};\n\nlet dropped_consultant = 0;\nlet dropped_stale = 0;\nlet dropped_dedup = 0;\nlet dropped_no_name = 0;\nlet dropped_no_job_id = 0;\nlet dropped_intra_batch_duplicate = 0;\nconst survivingJobIds = [];\nconst pass1_map = {};\n\nfor (const r of listingItems) {\n  if (r.consultant) {\n    dropped_consultant++;\n    continue;\n  }\n  const fDays = parseFooterDays(r.footerLabel);\n  if (fDays > max_footer_days || String(r.footerLabel || '').includes('30+')) {\n    dropped_stale++;\n    continue;\n  }\n  const name = r.companyName;\n  if (!name || !String(name).trim()) {\n    dropped_no_name++;\n    continue;\n  }\n  const n = norm(name);\n  if (!n || seen.has(n)) {\n    dropped_dedup++;\n    continue;\n  }\n  const jId = String(r.jobId || '').trim();\n  if (!jId) {\n    dropped_no_job_id++;\n    continue;\n  }\n  if (pass1_map[jId]) {\n    dropped_intra_batch_duplicate++;\n    continue;\n  }\n  survivingJobIds.push(jId);\n  pass1_map[jId] = {\n    jobId: jId,\n    companyName: name,\n    norm: n,\n    location: r.location || '',\n    footerDays: fDays,\n    footerLabel: r.footerLabel || ''\n  };\n}\n\nconst has_survivors = survivingJobIds.length > 0;\nreturn [{\n  json: {\n    has_error: false,\n    has_survivors,\n    jobIds: survivingJobIds,\n    pass1_map,\n    rows_listed: listingItems.length,\n    job_ids_requested: survivingJobIds.length,\n    dropped: {\n      consultant: dropped_consultant,\n      stale: dropped_stale,\n      dedup: dropped_dedup,\n      no_name: dropped_no_name,\n      no_job_id: dropped_no_job_id,\n      intra_batch_duplicate: dropped_intra_batch_duplicate,\n      below_floor: 0,\n      velocity: 0\n    },\n    min_apply_count,\n    max_footer_days\n  }\n}];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "a1111111-2222-3333-4444-555555555555",
+      "name": "If Has Survivors",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1120,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c1f7a08b-1111-4222-b333-d444e555f666",
+              "leftValue": "={{ $json.has_survivors }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "typeVersion": 2.3
+    },
+    {
+      "id": "b2222222-3333-4444-5555-666666666666",
+      "name": "Apify Enrich",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1340,
+        200
+      ],
+      "parameters": {
+        "url": "https://api.apify.com/v2/acts/xYOP3UjaS8w38lWM7/run-sync-get-dataset-items",
+        "method": "POST",
+        "options": {
+          "timeout": 120000
+        },
+        "jsonBody": "={{ JSON.stringify({ jobIds: $json.jobIds, maxResults: ($json.jobIds.length || 150), fetchDetails: true, compact: false }) }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "typeVersion": 4.4
+    },
+    {
+      "id": "f5555555-6666-7777-8888-999999999999",
+      "name": "Prep Enriched & History",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1560,
+        200
+      ],
+      "parameters": {
+        "jsCode": "const prep = $('Pass 1 Filter & Dedup').first().json;\nconst p1_map = prep.pass1_map || {};\n\nlet enrichedItems = [];\ntry {\n  enrichedItems = $('Apify Enrich').all().map(i => i.json);\n} catch (e) {\n  enrichedItems = [];\n}\n\nenrichedItems = enrichedItems.filter(i => i && Object.keys(i).length > 0 && (i.jobId || i.companyName || i.error));\n\nconst norm = s => (s || '').toLowerCase()\n  .replace(/\\b(pvt|private|ltd|limited|llp|inc|co|company|industries|india)\\b/gi, '')\n  .replace(/[^a-z0-9]/g, '');\n\nconst history_rows = [];\n\nfor (const r of enrichedItems) {\n  const jId = String(r.jobId || '').trim();\n  if (!jId) continue;\n  const p1 = p1_map[jId] || {};\n  const compName = p1.companyName || r.companyName || '';\n  const n = p1.norm || norm(compName);\n  const applyCount = parseInt(r.applyCount || 0, 10);\n  history_rows.push({\n    job_id: jId,\n    company_key: n,\n    apply_count: String(applyCount)\n  });\n}\n\nreturn [{\n  json: {\n    history_rows,\n    has_history: history_rows.length > 0\n  }\n}];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "e5555555-6666-7777-8888-999999999999",
+      "name": "Log History",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        1780,
+        200
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO job_apply_history (job_id, company_key, apply_count, seen_at)\nSELECT r.job_id, r.company_key, NULLIF(r.apply_count,'')::int, now()\nFROM jsonb_to_recordset($1::jsonb) AS r(job_id text, company_key text, apply_count text);",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify($json.history_rows || []) }}"
+        }
+      },
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "typeVersion": 2.6
+    },
+    {
+      "id": "c3333333-4444-5555-6666-777777777777",
+      "name": "Pass 2 Process & Aggregate",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        2000,
+        200
+      ],
+      "parameters": {
+        "jsCode": "const prep = $('Pass 1 Filter & Dedup').first().json;\nconst p1_map = prep.pass1_map || {};\n\nlet enrichedItems = [];\ntry {\n  enrichedItems = $('Apify Enrich').all().map(i => i.json);\n} catch (e) {\n  enrichedItems = [];\n}\n\nenrichedItems = enrichedItems.filter(i => i && Object.keys(i).length > 0 && (i.jobId || i.companyName || i.error));\n\nif (!enrichedItems || enrichedItems.length === 0 || enrichedItems[0]?.error || enrichedItems[0]?.statusCode >= 400) {\n  const cost = Number(((prep.rows_listed * 0.0005) + 0.00005).toFixed(5));\n  const errMsg = enrichedItems?.[0]?.error || enrichedItems?.[0]?.message || 'Apify enrichment call failed or returned zero rows';\n  return [{\n    json: {\n      error: errMsg,\n      meta: {\n        rows_listed: prep.rows_listed,\n        job_ids_requested: prep.job_ids_requested,\n        rows_enriched: 0,\n        dropped: prep.dropped,\n        apify_cost_estimate_usd: cost\n      }\n    }\n  }];\n}\n\nconst norm = s => (s || '').toLowerCase()\n  .replace(/\\b(pvt|private|ltd|limited|llp|inc|co|company|industries|india)\\b/gi, '')\n  .replace(/[^a-z0-9]/g, '');\n\nconst parseFooterDays = (fl) => {\n  const s = String(fl || '').trim().toLowerCase();\n  if (!s || s === 'just now' || s === 'today') return 0;\n  if (s === 'yesterday' || s === '1 day ago' || s === '1 days ago') return 1;\n  const m = s.match(/^(\\d+)\\s+day/);\n  if (m) return parseInt(m[1], 10);\n  if (s.includes('30+')) return 30;\n  return 30;\n};\n\nconst getCreatedAgeDays = (createdDate, fallbackDays) => {\n  if (!createdDate) return fallbackDays !== undefined ? fallbackDays : 0;\n  const d = new Date(createdDate);\n  if (isNaN(d.getTime())) return fallbackDays !== undefined ? fallbackDays : 0;\n  const diffMs = Date.now() - d.getTime();\n  return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));\n};\n\nlet dropped_velocity = 0;\nconst grouped = {};\n\nfor (const r of enrichedItems) {\n  const jId = String(r.jobId || '').trim();\n  const p1 = p1_map[jId] || {};\n\n  const compName = p1.companyName || r.companyName || '';\n  const n = p1.norm || norm(compName);\n  if (!n) continue;\n\n  const fDays = p1.footerDays !== undefined ? p1.footerDays : parseFooterDays(r.footerLabel);\n  const applyCount = parseInt(r.applyCount || 0, 10);\n  const createdAgeDays = getCreatedAgeDays(r.createdDate, fDays);\n  const velocity = applyCount / Math.max(1, createdAgeDays);\n\n  // Velocity guard: drop when listing older than 90 days AND velocity < 3\n  if (createdAgeDays > 90 && velocity < 3) {\n    dropped_velocity++;\n    continue;\n  }\n\n  const city = p1.location || (r.locations && r.locations[0] && r.locations[0].label) || r.location || '';\n\n  if (!grouped[n]) {\n    grouped[n] = {\n      company_name: compName,\n      norm: n,\n      city: city,\n      industry: r.industry || r.companyIndustry || '',\n      apply_count_total: 0,\n      roles_count: 0,\n      role_titles: [],\n      job_ids: [],\n      footer_days_min: Infinity,\n      created_age_days_min: Infinity,\n      velocity_max: 0,\n      company_website: r.companyWebsite || '',\n      emails: [],\n      phones: [],\n      walkin: false\n    };\n  }\n\n  const g = grouped[n];\n  g.apply_count_total += applyCount;\n  g.roles_count += 1;\n\n  if (!g.city && city) g.city = city;\n  if (!g.industry && (r.industry || r.companyIndustry)) g.industry = r.industry || r.companyIndustry;\n\n  const title = (r.title || r.jobTitle || '').trim();\n  if (title && !g.role_titles.includes(title)) {\n    g.role_titles.push(title);\n  }\n\n  if (jId && !g.job_ids.includes(jId)) {\n    g.job_ids.push(jId);\n  }\n\n  if (fDays < g.footer_days_min) {\n    g.footer_days_min = fDays;\n  }\n\n  if (createdAgeDays < g.created_age_days_min) {\n    g.created_age_days_min = createdAgeDays;\n  }\n\n  const velRounded = Number(velocity.toFixed(1));\n  if (velRounded > g.velocity_max) {\n    g.velocity_max = velRounded;\n  }\n\n  if (!g.company_website && r.companyWebsite) {\n    g.company_website = r.companyWebsite;\n  }\n\n  if (r.extractedEmails && Array.isArray(r.extractedEmails)) {\n    for (const em of r.extractedEmails) {\n      if (em && !g.emails.includes(em)) g.emails.push(em);\n    }\n  } else if (r.contactEmail && !g.emails.includes(r.contactEmail)) {\n    g.emails.push(r.contactEmail);\n  }\n\n  if (r.extractedPhones && Array.isArray(r.extractedPhones)) {\n    for (const ph of r.extractedPhones) {\n      if (ph && !g.phones.includes(ph)) g.phones.push(ph);\n    }\n  } else if (r.extractedPhoneNumbers && Array.isArray(r.extractedPhoneNumbers)) {\n    for (const ph of r.extractedPhoneNumbers) {\n      if (ph && !g.phones.includes(ph)) g.phones.push(ph);\n    }\n  } else if (r.contactPhone && !g.phones.includes(r.contactPhone)) {\n    g.phones.push(r.contactPhone);\n  }\n\n  if (r.isWalkin || r.walkin || r.walkIn || r.walkinJob) {\n    g.walkin = true;\n  }\n}\n\nlet dropped_below_floor = 0;\nconst survivingCompanies = [];\n\nfor (const comp of Object.values(grouped)) {\n  if (comp.footer_days_min === Infinity) comp.footer_days_min = 0;\n  if (comp.created_age_days_min === Infinity) comp.created_age_days_min = 0;\n\n  if (comp.apply_count_total < prep.min_apply_count) {\n    dropped_below_floor++;\n    continue;\n  }\n  survivingCompanies.push(comp);\n}\n\nconst apify_cost_estimate_usd = Number(((prep.rows_listed * 0.0005) + (enrichedItems.length * 0.002) + 0.0001).toFixed(5));\n\nconst meta = {\n  rows_listed: prep.rows_listed,\n  job_ids_requested: prep.job_ids_requested,\n  rows_enriched: enrichedItems.length,\n  dropped: {\n    consultant: prep.dropped.consultant,\n    stale: prep.dropped.stale,\n    dedup: prep.dropped.dedup,\n    no_name: prep.dropped.no_name,\n    no_job_id: prep.dropped.no_job_id,\n    intra_batch_duplicate: prep.dropped.intra_batch_duplicate,\n    below_floor: dropped_below_floor,\n    velocity: dropped_velocity\n  },\n  apify_cost_estimate_usd\n};\n\n// Defect 1 fix: Zero companies is NEVER an empty success\nif (survivingCompanies.length === 0) {\n  const errorMsg = `0 of ${prep.rows_listed} rows survived: ${prep.dropped.stale} stale, ${prep.dropped.dedup} dedup, ${dropped_below_floor} below volume floor (<${prep.min_apply_count}), ${dropped_velocity} velocity guard`;\n  return [{\n    json: {\n      error: errorMsg,\n      meta\n    }\n  }];\n}\n\nconst output = survivingCompanies.map(c => ({ json: c }));\noutput.push({ json: { meta } });\nreturn output;"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "d4444444-5555-6666-7777-888888888888",
+      "name": "Format No Survivors or Error",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1340,
+        420
+      ],
+      "parameters": {
+        "jsCode": "const prep = $('Pass 1 Filter & Dedup').first().json;\nconst cost = Number(((prep.rows_listed * 0.0005) + 0.00005).toFixed(5));\n\nconst droppedDetails = [];\nif (prep.dropped?.stale) droppedDetails.push(`${prep.dropped.stale} stale`);\nif (prep.dropped?.dedup) droppedDetails.push(`${prep.dropped.dedup} dedup`);\nif (prep.dropped?.consultant) droppedDetails.push(`${prep.dropped.consultant} consultant`);\nif (prep.dropped?.no_name) droppedDetails.push(`${prep.dropped.no_name} no name`);\nif (prep.dropped?.no_job_id) droppedDetails.push(`${prep.dropped.no_job_id} no job ID`);\nif (prep.dropped?.intra_batch_duplicate) droppedDetails.push(`${prep.dropped.intra_batch_duplicate} intra-batch duplicates`);\n\nconst errorMsg = prep.error || `0 of ${prep.rows_listed} rows survived pass 1: ${droppedDetails.join(', ') || 'all rows filtered'}`;\n\nreturn [{\n  json: {\n    error: errorMsg,\n    meta: {\n      rows_listed: prep.rows_listed,\n      job_ids_requested: 0,\n      rows_enriched: 0,\n      dropped: prep.dropped,\n      apify_cost_estimate_usd: cost\n    }\n  }\n}];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "2b4b7d8d-c3a9-4152-9588-bf2224454014",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        2220,
+        300
+      ],
+      "parameters": {
+        "options": {},
+        "respondWith": "allIncomingItems"
+      },
+      "typeVersion": 1.5
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Apify List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apify List": {
+      "main": [
+        [
+          {
+            "node": "Existing Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Existing Leads": {
+      "main": [
+        [
+          {
+            "node": "Pass 1 Filter & Dedup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pass 1 Filter & Dedup": {
+      "main": [
+        [
+          {
+            "node": "If Has Survivors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Has Survivors": {
+      "main": [
+        [
+          {
+            "node": "Apify Enrich",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format No Survivors or Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apify Enrich": {
+      "main": [
+        [
+          {
+            "node": "Prep Enriched & History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prep Enriched & History": {
+      "main": [
+        [
+          {
+            "node": "Log History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log History": {
+      "main": [
+        [
+          {
+            "node": "Pass 2 Process & Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pass 2 Process & Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format No Survivors or Error": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  }
+}
