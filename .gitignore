@@ -30,4 +30,5 @@ __pycache__/
 *.py[cod]
 *.py
 !jd-lead-newspaper/fix_role_titles_split.py
-
+!jd-lead-newspaper/ocr-poc/*.py
+!jd-lead-newspaper/ocr-service/*.py
