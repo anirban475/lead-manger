@@ -1,0 +1,1868 @@
+[
+  {
+    "indupaper_slug": "amar-ujala",
+    "region_scheme": "fixed_set_from_html",
+    "regions": [
+      {
+        "value": "delhi-city",
+        "name": "Delhi City"
+      },
+      {
+        "value": "agra-city",
+        "name": "Agra City"
+      },
+      {
+        "value": "lucknow-city",
+        "name": "Lucknow City"
+      },
+      {
+        "value": "kanpur-city",
+        "name": "Kanpur City"
+      },
+      {
+        "value": "varanasi-city",
+        "name": "Varanasi City"
+      },
+      {
+        "value": "allahabad-city",
+        "name": "Allahabad City"
+      },
+      {
+        "value": "meerut-city",
+        "name": "Meerut City"
+      },
+      {
+        "value": "dehradun-city",
+        "name": "Dehradun City"
+      },
+      {
+        "value": "bareilly-city",
+        "name": "Bareilly City"
+      },
+      {
+        "value": "gorakhpur-city",
+        "name": "Gorakhpur City"
+      }
+    ],
+    "region_param_verified": true
+  },
+  {
+    "indupaper_slug": "rajasthan-patrika",
+    "region_scheme": "fixed_set_from_html",
+    "regions": [
+      {
+        "value": "jaipur-city",
+        "name": "Jaipur City"
+      },
+      {
+        "value": "jodhpur-city",
+        "name": "Jodhpur City"
+      },
+      {
+        "value": "udaipur-city",
+        "name": "Udaipur City"
+      },
+      {
+        "value": "bikaner-city",
+        "name": "Bikaner City"
+      },
+      {
+        "value": "jodhpur",
+        "name": "Jodhpur"
+      },
+      {
+        "value": "udaipur",
+        "name": "Udaipur"
+      },
+      {
+        "value": "kota",
+        "name": "Kota"
+      },
+      {
+        "value": "bikaner",
+        "name": "Bikaner"
+      },
+      {
+        "value": "ajmer",
+        "name": "Ajmer"
+      },
+      {
+        "value": "alwar",
+        "name": "Alwar"
+      },
+      {
+        "value": "bhilwara",
+        "name": "Bhilwara"
+      },
+      {
+        "value": "sikar",
+        "name": "Sikar"
+      },
+      {
+        "value": "sri-ganganagar",
+        "name": "Sri Ganganagar"
+      }
+    ],
+    "region_param_verified": true
+  },
+  {
+    "indupaper_slug": "dainik-jagran",
+    "region_scheme": "fixed_set_from_html",
+    "regions": [
+      {
+        "value": "262-National",
+        "name": "National (262)"
+      },
+      {
+        "value": "delhi",
+        "name": "Delhi"
+      },
+      {
+        "value": "lucknow",
+        "name": "Lucknow"
+      },
+      {
+        "value": "kanpur",
+        "name": "Kanpur"
+      },
+      {
+        "value": "patna",
+        "name": "Patna"
+      },
+      {
+        "value": "varanasi",
+        "name": "Varanasi"
+      },
+      {
+        "value": "prayagraj",
+        "name": "Prayagraj"
+      },
+      {
+        "value": "gorakhpur",
+        "name": "Gorakhpur"
+      },
+      {
+        "value": "agra",
+        "name": "Agra"
+      },
+      {
+        "value": "meerut",
+        "name": "Meerut"
+      }
+    ],
+    "region_param_verified": "untested"
+  },
+  {
+    "indupaper_slug": "times-of-india",
+    "region_scheme": "fixed_set_from_html",
+    "regions": [
+      {
+        "value": "ahmedabad",
+        "name": "Ahmedabad"
+      },
+      {
+        "value": "bangalore",
+        "name": "Bangalore"
+      },
+      {
+        "value": "bhopal",
+        "name": "Bhopal"
+      },
+      {
+        "value": "chandigarh",
+        "name": "Chandigarh"
+      },
+      {
+        "value": "chennai",
+        "name": "Chennai"
+      },
+      {
+        "value": "delhi",
+        "name": "Delhi"
+      },
+      {
+        "value": "goa",
+        "name": "Goa"
+      },
+      {
+        "value": "hyderabad",
+        "name": "Hyderabad"
+      },
+      {
+        "value": "jaipur",
+        "name": "Jaipur"
+      },
+      {
+        "value": "kochi",
+        "name": "Kochi"
+      },
+      {
+        "value": "kolkata",
+        "name": "Kolkata"
+      },
+      {
+        "value": "lucknow",
+        "name": "Lucknow"
+      },
+      {
+        "value": "mumbai",
+        "name": "Mumbai"
+      },
+      {
+        "value": "pune",
+        "name": "Pune"
+      }
+    ],
+    "region_param_verified": true
+  },
+  {
+    "indupaper_slug": "hindustan-times",
+    "region_scheme": "dynamic_lookup_endpoint",
+    "regions": [
+      {
+        "value": "amritsar",
+        "name": "Amritsar"
+      },
+      {
+        "value": "amritsar-city",
+        "name": "Amritsar City"
+      },
+      {
+        "value": "bengaluru",
+        "name": "Bengaluru"
+      },
+      {
+        "value": "brunch-bengaluru",
+        "name": "Brunch Bengaluru"
+      },
+      {
+        "value": "brunch-chandigarh",
+        "name": "Brunch Chandigarh"
+      },
+      {
+        "value": "chandigarh",
+        "name": "Chandigarh"
+      },
+      {
+        "value": "chandigarh-city",
+        "name": "Chandigarh City"
+      },
+      {
+        "value": "chandigarh-live",
+        "name": "Chandigarh Live"
+      },
+      {
+        "value": "brunch-delhi",
+        "name": "Brunch Delhi"
+      },
+      {
+        "value": "delhi",
+        "name": "Delhi"
+      },
+      {
+        "value": "delhi-city",
+        "name": "Delhi City"
+      },
+      {
+        "value": "east-delhi-city",
+        "name": "East Delhi City"
+      },
+      {
+        "value": "north-delhi-city",
+        "name": "North Delhi City"
+      },
+      {
+        "value": "showstopper",
+        "name": "Showstoppers"
+      },
+      {
+        "value": "south-delhi-city",
+        "name": "South Delhi City"
+      },
+      {
+        "value": "west-delhi-city",
+        "name": "West Delhi City"
+      },
+      {
+        "value": "brunch-east-up",
+        "name": "Brunch East UP"
+      },
+      {
+        "value": "east-up",
+        "name": "East UP"
+      },
+      {
+        "value": "brunch-gurugram",
+        "name": "Brunch Gurugram"
+      },
+      {
+        "value": "gurgaon",
+        "name": "Gurgaon"
+      },
+      {
+        "value": "gurugram-city",
+        "name": "Gurugram City"
+      },
+      {
+        "value": "brunch-haryana",
+        "name": "Brunch Haryana"
+      },
+      {
+        "value": "haryana",
+        "name": "Haryana"
+      },
+      {
+        "value": "jammu",
+        "name": "Jammu"
+      },
+      {
+        "value": "brunch-lucknow",
+        "name": "Brunch Lucknow"
+      },
+      {
+        "value": "lucknow",
+        "name": "Lucknow"
+      },
+      {
+        "value": "lucknow-city",
+        "name": "Lucknow City"
+      },
+      {
+        "value": "ludhiana",
+        "name": "Ludhiana"
+      },
+      {
+        "value": "ludhiana-city",
+        "name": "Ludhiana City"
+      },
+      {
+        "value": "ludhiana-live",
+        "name": "Ludhiana Live"
+      },
+      {
+        "value": "brunch-mumbai",
+        "name": "Brunch Mumbai"
+      },
+      {
+        "value": "mumbai",
+        "name": "Mumbai"
+      },
+      {
+        "value": "mumbai-city",
+        "name": "Mumbai City"
+      },
+      {
+        "value": "powai-mumbai-city",
+        "name": "Powai Mumbai City"
+      },
+      {
+        "value": "south-mumbai-cafe",
+        "name": "South Mumbai Café"
+      },
+      {
+        "value": "west-mumbai-city",
+        "name": "West Mumbai City"
+      },
+      {
+        "value": "brunch-navi-mumbai",
+        "name": "Brunch Navi Mumbai"
+      },
+      {
+        "value": "mumbai-city-htc-mumb",
+        "name": "Mumbai City"
+      },
+      {
+        "value": "navi-mumbai",
+        "name": "Navi Mumbai"
+      },
+      {
+        "value": "brunch-noida",
+        "name": "Brunch Noida"
+      },
+      {
+        "value": "noida",
+        "name": "Noida"
+      },
+      {
+        "value": "noida-city",
+        "name": "Noida City"
+      },
+      {
+        "value": "brunch-patna",
+        "name": "Brunch Patna"
+      },
+      {
+        "value": "patna",
+        "name": "Patna"
+      },
+      {
+        "value": "patna-city",
+        "name": "Patna City"
+      },
+      {
+        "value": "brunch-pune",
+        "name": "Brunch Pune"
+      },
+      {
+        "value": "pune",
+        "name": "Pune"
+      },
+      {
+        "value": "pune-city",
+        "name": "Pune City"
+      },
+      {
+        "value": "jalandhar",
+        "name": "Jalandhar"
+      },
+      {
+        "value": "jalandhar-city",
+        "name": "Jalandhar City"
+      },
+      {
+        "value": "malwa-city",
+        "name": "Malwa City"
+      },
+      {
+        "value": "patiala",
+        "name": "Patiala"
+      },
+      {
+        "value": "patiala-live",
+        "name": "Patiala Live"
+      },
+      {
+        "value": "punjab",
+        "name": "Punjab"
+      },
+      {
+        "value": "brunch-rajasthan",
+        "name": "Brunch Rajasthan"
+      },
+      {
+        "value": "rajasthan",
+        "name": "Rajasthan"
+      },
+      {
+        "value": "rajasthan-city",
+        "name": "Rajasthan City"
+      },
+      {
+        "value": "brunch-ranchi",
+        "name": "Brunch Ranchi"
+      },
+      {
+        "value": "ranchi",
+        "name": "Ranchi"
+      },
+      {
+        "value": "ranchi-city",
+        "name": "Ranchi City"
+      },
+      {
+        "value": "school-chandigarh",
+        "name": "School Chandigarh"
+      },
+      {
+        "value": "school-delhi",
+        "name": "School Delhi"
+      },
+      {
+        "value": "school-lucknow",
+        "name": "School Lucknow"
+      },
+      {
+        "value": "school-mumbai",
+        "name": "School Mumbai"
+      },
+      {
+        "value": "brunch-thane",
+        "name": "Brunch Thane"
+      },
+      {
+        "value": "thane",
+        "name": "Thane"
+      },
+      {
+        "value": "thane-city",
+        "name": "Thane City"
+      },
+      {
+        "value": "brunch-uttrakhand",
+        "name": "Brunch Uttrakhand"
+      },
+      {
+        "value": "uttrakhand",
+        "name": "Uttrakhand"
+      },
+      {
+        "value": "varanasi",
+        "name": "Varanasi"
+      },
+      {
+        "value": "brunch-west-up",
+        "name": "Brunch West UP"
+      },
+      {
+        "value": "west-up",
+        "name": "West UP"
+      }
+    ],
+    "region_param_verified": true
+  },
+  {
+    "indupaper_slug": "economic-times",
+    "region_scheme": "fixed_set_from_html",
+    "regions": [
+      {
+        "value": "bangalore",
+        "name": "Bangalore"
+      },
+      {
+        "value": "delhi",
+        "name": "Delhi"
+      },
+      {
+        "value": "kolkata",
+        "name": "Kolkata"
+      },
+      {
+        "value": "mumbai",
+        "name": "Mumbai"
+      }
+    ],
+    "region_param_verified": true
+  },
+  {
+    "indupaper_slug": "mirror",
+    "region_scheme": "fixed_set_from_html",
+    "regions": [
+      {
+        "value": "bangalore",
+        "name": "Bangalore"
+      },
+      {
+        "value": "mumbai",
+        "name": "Mumbai"
+      },
+      {
+        "value": "pune",
+        "name": "Pune"
+      }
+    ],
+    "region_param_verified": true
+  },
+  {
+    "indupaper_slug": "hindustan",
+    "region_scheme": "dynamic_lookup_endpoint",
+    "regions": [
+      {
+        "value": "delhi",
+        "name": "दिल्ली (Delhi)"
+      },
+      {
+        "value": "ghaziabad",
+        "name": "गाज़ियाबाद (Ghaziabad)"
+      },
+      {
+        "value": "faridabad",
+        "name": "फरीदाबाद (Faridabad)"
+      },
+      {
+        "value": "noida",
+        "name": "नोएडा (Noida)"
+      },
+      {
+        "value": "gurgaon",
+        "name": "गुडगाँव (Gurgaon)"
+      },
+      {
+        "value": "trans-hindon",
+        "name": "ट्रांस-हिंडन (Trans-Hindon)"
+      },
+      {
+        "value": "ghaziabad live",
+        "name": "गाज़ियाबाद-लाइव (Ghaziabad Live)"
+      },
+      {
+        "value": "faridabad live",
+        "name": "फरीदाबाद-लाइव (Faridabad Live)"
+      },
+      {
+        "value": "noida live",
+        "name": "नोएडा-लाइव (Noida Live)"
+      },
+      {
+        "value": "delhi live",
+        "name": "दिल्ली-लाइव (Delhi Live)"
+      },
+      {
+        "value": "trans-hindon live",
+        "name": "ट्रांस-हिंडन-लाइव (Trans-Hindon Live)"
+      },
+      {
+        "value": "mainpuri",
+        "name": "मैनपुरी (Mainpuri)"
+      },
+      {
+        "value": "etah",
+        "name": "एटा (Etah)"
+      },
+      {
+        "value": "agra",
+        "name": "आगरा (Agra)"
+      },
+      {
+        "value": "agra-janpad",
+        "name": "आगरा-जनपद (Agra-Janpad)"
+      },
+      {
+        "value": "mathura",
+        "name": "मथुरा (Mathura)"
+      },
+      {
+        "value": "agra-smart",
+        "name": "आगरा-स्मार्ट (Agra-Smart)"
+      },
+      {
+        "value": "firozabad",
+        "name": "फिरोजाबाद (Firozabad)"
+      },
+      {
+        "value": "hathras",
+        "name": "हाथरस (Hathras)"
+      },
+      {
+        "value": "aligarh",
+        "name": "अलीगढ़ (Aligarh)"
+      },
+      {
+        "value": "aligarh-janpad",
+        "name": "अलीगढ़-जनपद (Aligarh-Janpad)"
+      },
+      {
+        "value": "gangapar",
+        "name": "गंगापार (Gangapar)"
+      },
+      {
+        "value": "prayagraj",
+        "name": "प्रयागराज (Prayagraj)"
+      },
+      {
+        "value": "prayagraj-smart",
+        "name": "प्रयागराज-स्मार्ट (Prayagraj-Smart)"
+      },
+      {
+        "value": "kaushambi",
+        "name": "कौशाम्बी (Kaushambi)"
+      },
+      {
+        "value": "pratapgarh",
+        "name": "प्रतापगढ़ (PratapGarh)"
+      },
+      {
+        "value": "bareilly-dehat",
+        "name": "बरेली-देहात (Bareilly-Dehat)"
+      },
+      {
+        "value": "bareilly-nagar",
+        "name": "बरेली (Bareilly-Nagar)"
+      },
+      {
+        "value": "bareilly-smart",
+        "name": "बरेली-स्मार्ट  (Bareilly-Smart)"
+      },
+      {
+        "value": "lakhimpur-khiri",
+        "name": "लखीमपुर-खीरी (Lakhimpur-Khiri)"
+      },
+      {
+        "value": "shahjahanpur",
+        "name": "शाहजहांपुर (Shahjahanpur)"
+      },
+      {
+        "value": "pilibhit",
+        "name": "पीलीभीत (Pilibhit)"
+      },
+      {
+        "value": "badayaun",
+        "name": "बदायूं  (Badayaun)"
+      },
+      {
+        "value": "kanpur",
+        "name": "कानपुर (Kanpur)"
+      },
+      {
+        "value": "kanpur-smart",
+        "name": "कानपुर-स्मार्ट  (Kanpur-Smart)"
+      },
+      {
+        "value": "hamirpur",
+        "name": "हमीरपुर (Hamirpur)"
+      },
+      {
+        "value": "jhanshi",
+        "name": "झाँसी-ललितपुर  (Jhanshi)"
+      },
+      {
+        "value": "etawah",
+        "name": "इटावा (Etawah)"
+      },
+      {
+        "value": "farrukhabad",
+        "name": "फर्रुखाबाद (Farrukhabad)"
+      },
+      {
+        "value": "unnao",
+        "name": "उन्नाव (Unnao)"
+      },
+      {
+        "value": "raebarriellyfatehpur",
+        "name": "फ़तेहपुर (RaebarriellyFatehpur)"
+      },
+      {
+        "value": "hardoi",
+        "name": "हरदोई (Hardoi)"
+      },
+      {
+        "value": "kanpur-dehaat",
+        "name": "कानपुर-देहात (Kanpur-Dehaat)"
+      },
+      {
+        "value": "kannauj",
+        "name": "कन्नौज (Kannauj)"
+      },
+      {
+        "value": "aurriya",
+        "name": "औरैया (Aurriya)"
+      },
+      {
+        "value": "banda",
+        "name": "बाँदा (Banda)"
+      },
+      {
+        "value": "orai",
+        "name": "उरई (Orai)"
+      },
+      {
+        "value": "meerut-janpad",
+        "name": "मेरठ-जनपद (Meerut-Janpad)"
+      },
+      {
+        "value": "meerut",
+        "name": "मेरठ (Meerut)"
+      },
+      {
+        "value": "meerut-smart",
+        "name": "मेरठ-स्मार्ट  (Meerut-Smart)"
+      },
+      {
+        "value": "bijnor",
+        "name": "बिजनौर (Bijnor)"
+      },
+      {
+        "value": "bulandshahar",
+        "name": "बुलंदशहर (Bulandshahar)"
+      },
+      {
+        "value": "saharanpur",
+        "name": "सहारनपुर-देवबंद  (Saharanpur)"
+      },
+      {
+        "value": "muzaffarnagar",
+        "name": "मुजफ्फरनगर (Muzaffarnagar)"
+      },
+      {
+        "value": "baghpat",
+        "name": "बागपत (Baghpat)"
+      },
+      {
+        "value": "shamli",
+        "name": "शामली (Shamli)"
+      },
+      {
+        "value": "hapur",
+        "name": "हापुड़ (Hapur)"
+      },
+      {
+        "value": "lucknow-nagar",
+        "name": "लखनऊ (Lucknow-Nagar)"
+      },
+      {
+        "value": "lucknow-smart",
+        "name": "लखनऊ-स्मार्ट  (Lucknow-Smart)"
+      },
+      {
+        "value": "bharaich",
+        "name": "बहराइच-श्रावस्ती (Bharaich)"
+      },
+      {
+        "value": "gonda",
+        "name": "गोंडा (Gonda)"
+      },
+      {
+        "value": "sultanpur",
+        "name": "सुल्तानपुर-अमेठी (Sultanpur)"
+      },
+      {
+        "value": "sitapur",
+        "name": "सीतापुर (Sitapur)"
+      },
+      {
+        "value": "ambedkar-nagar",
+        "name": "अम्बेडकर-नगर (Ambedkar-Nagar)"
+      },
+      {
+        "value": "faizabad",
+        "name": "अयोध्या  (Faizabad)"
+      },
+      {
+        "value": "raebarrielly",
+        "name": "रायबरेली (Raebarrielly)"
+      },
+      {
+        "value": "barabanki",
+        "name": "बाराबंकी (Barabanki)"
+      },
+      {
+        "value": "balrampur",
+        "name": "बलरामपुर (Balrampur)"
+      },
+      {
+        "value": "moradabad-nagar",
+        "name": "मुरादाबाद (Moradabad-Nagar)"
+      },
+      {
+        "value": "moradabad-dehat",
+        "name": "मुरादाबाद-देहात (Moradabad-Dehat)"
+      },
+      {
+        "value": "moradabad-smart",
+        "name": "मुरादाबाद-स्मार्ट  (Moradabad-Smart)"
+      },
+      {
+        "value": "rampur",
+        "name": "रामपुर (Rampur)"
+      },
+      {
+        "value": "sambal",
+        "name": "संभल  (Sambal)"
+      },
+      {
+        "value": "amroha",
+        "name": "अमरोहा (Amroha)"
+      },
+      {
+        "value": "sonbhadra",
+        "name": "सोनभद्र (Sonbhadra)"
+      },
+      {
+        "value": "ballia",
+        "name": "बलिया (Ballia)"
+      },
+      {
+        "value": "ghazipur",
+        "name": "गाजीपुर (Ghazipur)"
+      },
+      {
+        "value": "mau",
+        "name": "मऊ (Mau)"
+      },
+      {
+        "value": "azamgarh",
+        "name": "आजमगढ़ (Azamgarh)"
+      },
+      {
+        "value": "jonpur",
+        "name": "जौनपुर (Jonpur)"
+      },
+      {
+        "value": "mirzapur",
+        "name": "मिर्जापुर (Mirzapur)"
+      },
+      {
+        "value": "bhadohi",
+        "name": "भदोही (Bhadohi)"
+      },
+      {
+        "value": "chandauli",
+        "name": "चंदौली (Chandauli)"
+      },
+      {
+        "value": "varanasi",
+        "name": "वाराणसी (Varanasi)"
+      },
+      {
+        "value": "varanasi-smart",
+        "name": "वाराणसी-स्मार्ट (Varanasi-Smart)"
+      },
+      {
+        "value": "gorakhpur",
+        "name": "गोरखपुर (Gorakhpur)"
+      },
+      {
+        "value": "gorakhpur-smart",
+        "name": "गोरखपुर-स्मार्ट  (Gorakhpur-Smart)"
+      },
+      {
+        "value": "gorakhpur-dehat",
+        "name": "गोरखपुर-देहात (Gorakhpur-Dehat)"
+      },
+      {
+        "value": "basti",
+        "name": "बस्ती (Basti)"
+      },
+      {
+        "value": "deoria",
+        "name": "देवरिया (Deoria)"
+      },
+      {
+        "value": "maharajganj",
+        "name": "महाराजगंज (Maharajganj)"
+      },
+      {
+        "value": "kushinagar",
+        "name": "कुशीनगर  (Kushinagar)"
+      },
+      {
+        "value": "santkabir-nagar",
+        "name": "संतकबीर-नगर (SantKabir-Nagar)"
+      },
+      {
+        "value": "siddharth-nagar",
+        "name": "सिद्धार्थ-नगर (Siddharth-Nagar)"
+      },
+      {
+        "value": "garhwal",
+        "name": "गढ़वाल (Garhwal)"
+      },
+      {
+        "value": "dehradun-nagar",
+        "name": "देहरादून (Dehradun-Nagar)"
+      },
+      {
+        "value": "haridwar",
+        "name": "हरिद्वार (Haridwar)"
+      },
+      {
+        "value": "vikasnagar",
+        "name": "विकासनगर (Vikasnagar)"
+      },
+      {
+        "value": "dehradun-smart",
+        "name": "देहरादून-स्मार्ट  (Dehradun-Smart)"
+      },
+      {
+        "value": "roorkee",
+        "name": "रुड़की (Roorkee)"
+      },
+      {
+        "value": "rishikesh",
+        "name": "ऋषिकेश (Rishikesh)"
+      },
+      {
+        "value": "pithoragarh",
+        "name": "पिथोरागढ़ (Pithoragarh)"
+      },
+      {
+        "value": "haldwani-nagar",
+        "name": "हल्द्वानी (Haldwani-Nagar)"
+      },
+      {
+        "value": "udham-singh-nagar",
+        "name": "ऊधम-सिंह-नगर (Udham-Singh-Nagar)"
+      },
+      {
+        "value": "almora",
+        "name": "अल्मोड़ा (Almora)"
+      },
+      {
+        "value": "patna-nagar",
+        "name": "पटना (Patna-Nagar)"
+      },
+      {
+        "value": "aara",
+        "name": "आरा (Aara)"
+      },
+      {
+        "value": "patna-janpad",
+        "name": "पटना-जनपद (Patna-Janpad)"
+      },
+      {
+        "value": "begusarai",
+        "name": "बेगूसराय (Begusarai)"
+      },
+      {
+        "value": "jahanabad",
+        "name": "जहानाबाद (Jahanabad)"
+      },
+      {
+        "value": "aurangabad",
+        "name": "औरंगाबाद (Aurangabad)"
+      },
+      {
+        "value": "vaishali",
+        "name": "वैशाली (Vaishali)"
+      },
+      {
+        "value": "buxar",
+        "name": "बक्सर (Buxar)"
+      },
+      {
+        "value": "sasaram",
+        "name": "सासाराम (Sasaram)"
+      },
+      {
+        "value": "chapra",
+        "name": "छपरा (Chapra)"
+      },
+      {
+        "value": "siwan",
+        "name": "सिवान (Siwan)"
+      },
+      {
+        "value": "nawada",
+        "name": "नवादा (Nawada)"
+      },
+      {
+        "value": "gopalganj",
+        "name": "गोपालगंज (Gopalganj)"
+      },
+      {
+        "value": "biharsharif",
+        "name": "बिहारशरीफ (Biharsharif)"
+      },
+      {
+        "value": "bhabua(kaimur)",
+        "name": "भभुआ (कैमूर) (Bhabua(kaimur))"
+      },
+      {
+        "value": "gaya",
+        "name": "गया (Gaya)"
+      },
+      {
+        "value": "samastipur",
+        "name": "समस्तीपुर (Samastipur)"
+      },
+      {
+        "value": "madhubani",
+        "name": "मधुबनी (Madhubani)"
+      },
+      {
+        "value": "motihari",
+        "name": "मोतिहारी (Motihari)"
+      },
+      {
+        "value": "west-champaran",
+        "name": "पश्चिम चंपारण (West-Champaran)"
+      },
+      {
+        "value": "sitamarhi",
+        "name": "सीतामढ़ी (Sitamarhi)"
+      },
+      {
+        "value": "darbhanga",
+        "name": "दरभंगा (Darbhanga)"
+      },
+      {
+        "value": "muzaffarpur",
+        "name": "मुजफ्फरपुर (Muzaffarpur)"
+      },
+      {
+        "value": "bhagalpur",
+        "name": "भागलपुर (Bhagalpur)"
+      },
+      {
+        "value": "khagaria",
+        "name": "खगरिया (Khagaria)"
+      },
+      {
+        "value": "katihar",
+        "name": "कटिहार (Katihar)"
+      },
+      {
+        "value": "purv-bihar(star)",
+        "name": "जमुई (Purv-Bihar(Star))"
+      },
+      {
+        "value": "kosi",
+        "name": "सहरसा (Kosi)"
+      },
+      {
+        "value": "purnia",
+        "name": "पूर्णिया (Purnia)"
+      },
+      {
+        "value": "purva-bihar(bgp)",
+        "name": "मुंगेर (Purva-Bihar(BGP))"
+      },
+      {
+        "value": "araria",
+        "name": "अररिया (ARARIA)"
+      },
+      {
+        "value": "madhepura",
+        "name": "मधेपुरा (Madhepura)"
+      },
+      {
+        "value": "supaul",
+        "name": "सुपौल (Supaul)"
+      },
+      {
+        "value": "banka",
+        "name": "बांका (Banka)"
+      },
+      {
+        "value": "lakhisarai",
+        "name": "लखीसराय (Lakhisarai)"
+      },
+      {
+        "value": "kishanganj",
+        "name": "किशनगंज (Kishanganj)"
+      },
+      {
+        "value": "chaibasa",
+        "name": "चाईबासा (Chaibasa)"
+      },
+      {
+        "value": "jamshedpur",
+        "name": "जमशेदपुर (Jamshedpur)"
+      },
+      {
+        "value": "ghatshila",
+        "name": "घाटशिला (Ghatshila)"
+      },
+      {
+        "value": "bokaro",
+        "name": "बोकारो (Bokaro)"
+      },
+      {
+        "value": "dhanbad",
+        "name": "धनबाद (Dhanbad)"
+      },
+      {
+        "value": "giridih",
+        "name": "गिरिडीह (Giridih)"
+      },
+      {
+        "value": "dumka",
+        "name": "दुमका (Dumka)"
+      },
+      {
+        "value": "deoghar",
+        "name": "देवघर (Deoghar)"
+      },
+      {
+        "value": "godda",
+        "name": "गोड्डा (Godda)"
+      },
+      {
+        "value": "sahibganj",
+        "name": "साहेबगंज (Sahibganj)"
+      },
+      {
+        "value": "ranchi-nagar",
+        "name": "रांची (Ranchi-Nagar)"
+      },
+      {
+        "value": "palamu",
+        "name": "पलामू (Palamu)"
+      },
+      {
+        "value": "koderma",
+        "name": "कोडरमा (Koderma)"
+      },
+      {
+        "value": "hazaribagh",
+        "name": "हजारीबाग (Hazaribagh)"
+      },
+      {
+        "value": "ld_gumla",
+        "name": "गुमला (LD_Gumla)"
+      },
+      {
+        "value": "ramgarh",
+        "name": "रामगढ़ (Ramgarh)"
+      },
+      {
+        "value": "khunti",
+        "name": "खूंटी-खलारी (Khunti)"
+      },
+      {
+        "value": "khalari",
+        "name": "खलारी (Khalari)"
+      },
+      {
+        "value": "garhwa",
+        "name": "गढ़वा (Garhwa)"
+      },
+      {
+        "value": "anokhee",
+        "name": "अनोखी (Anokhee)"
+      },
+      {
+        "value": "fursat",
+        "name": "फुरसत (Fursat)"
+      },
+      {
+        "value": "hindustan-jobs",
+        "name": "हिन्दुस्तान जॉब्स (Hindustan-Jobs)"
+      }
+    ],
+    "region_param_verified": true
+  },
+  {
+    "indupaper_slug": "haribhoomi",
+    "region_scheme": "sequential_ids",
+    "regions": [
+      {
+        "value": "9",
+        "name": "9"
+      },
+      {
+        "value": "12",
+        "name": "12"
+      },
+      {
+        "value": "13",
+        "name": "13"
+      },
+      {
+        "value": "14",
+        "name": "14"
+      },
+      {
+        "value": "15",
+        "name": "15"
+      },
+      {
+        "value": "16",
+        "name": "16"
+      },
+      {
+        "value": "17",
+        "name": "17"
+      },
+      {
+        "value": "18",
+        "name": "18"
+      },
+      {
+        "value": "19",
+        "name": "19"
+      },
+      {
+        "value": "21",
+        "name": "21"
+      },
+      {
+        "value": "36",
+        "name": "36"
+      },
+      {
+        "value": "46",
+        "name": "46"
+      },
+      {
+        "value": "47",
+        "name": "47"
+      },
+      {
+        "value": "61",
+        "name": "61"
+      },
+      {
+        "value": "65",
+        "name": "65"
+      },
+      {
+        "value": "74",
+        "name": "74"
+      }
+    ],
+    "region_param_verified": true
+  },
+  {
+    "indupaper_slug": "prabhat-khabar",
+    "region_scheme": "fixed_set_from_html",
+    "regions": [
+      {
+        "value": "ranchi-city",
+        "name": "Ranchi City"
+      },
+      {
+        "value": "jamshedpur-city",
+        "name": "Jamshedpur City"
+      },
+      {
+        "value": "dhanbad-city",
+        "name": "Dhanbad City"
+      },
+      {
+        "value": "patna-city",
+        "name": "Patna City"
+      },
+      {
+        "value": "muzaffarpur-city",
+        "name": "Muzaffarpur City"
+      },
+      {
+        "value": "kolkata-city",
+        "name": "Kolkata City"
+      },
+      {
+        "value": "deoghar-city",
+        "name": "Deoghar City"
+      },
+      {
+        "value": "bhagalpur-city",
+        "name": "Bhagalpur City"
+      },
+      {
+        "value": "gaya-city",
+        "name": "Gaya City"
+      }
+    ],
+    "region_param_verified": true
+  },
+  {
+    "indupaper_slug": "maharashtra-times",
+    "region_scheme": "fixed_set_from_html",
+    "regions": [
+      {
+        "value": "chhatrapati-sambhajinagar",
+        "name": "Chhatrapati Sambhajinagar"
+      },
+      {
+        "value": "mumbai",
+        "name": "Mumbai"
+      },
+      {
+        "value": "nagpur",
+        "name": "Nagpur"
+      },
+      {
+        "value": "nashik",
+        "name": "Nashik"
+      },
+      {
+        "value": "pune",
+        "name": "Pune"
+      }
+    ],
+    "region_param_verified": true
+  },
+  {
+    "indupaper_slug": "malayala-manorama",
+    "region_scheme": "sequential_ids",
+    "regions": [
+      {
+        "value": "1",
+        "name": "1"
+      },
+      {
+        "value": "2",
+        "name": "2"
+      },
+      {
+        "value": "3",
+        "name": "3"
+      },
+      {
+        "value": "4",
+        "name": "4"
+      },
+      {
+        "value": "5",
+        "name": "5"
+      },
+      {
+        "value": "6",
+        "name": "6"
+      },
+      {
+        "value": "7",
+        "name": "7"
+      },
+      {
+        "value": "8",
+        "name": "8"
+      },
+      {
+        "value": "9",
+        "name": "9"
+      },
+      {
+        "value": "10",
+        "name": "10"
+      },
+      {
+        "value": "11",
+        "name": "11"
+      },
+      {
+        "value": "12",
+        "name": "12"
+      },
+      {
+        "value": "13",
+        "name": "13"
+      },
+      {
+        "value": "14",
+        "name": "14"
+      },
+      {
+        "value": "15",
+        "name": "15"
+      },
+      {
+        "value": "16",
+        "name": "16"
+      },
+      {
+        "value": "17",
+        "name": "17"
+      },
+      {
+        "value": "18",
+        "name": "18"
+      },
+      {
+        "value": "19",
+        "name": "19"
+      },
+      {
+        "value": "20",
+        "name": "20"
+      },
+      {
+        "value": "21",
+        "name": "21"
+      }
+    ],
+    "region_param_verified": true
+  },
+  {
+    "indupaper_slug": "kannada-prabha",
+    "region_scheme": "dynamic_lookup_endpoint",
+    "regions": [
+      {
+        "value": "KANPRABHA_BG",
+        "name": "BENGALURU"
+      },
+      {
+        "value": "KANPRABHA_BNGRUR",
+        "name": "Bengaluru Rural - Bengaluru South"
+      },
+      {
+        "value": "KANPRABHA_TMKPRABHA",
+        "name": "TUMKUR"
+      },
+      {
+        "value": "KANPRABHA_MNDPRABHA",
+        "name": "MANDYA"
+      },
+      {
+        "value": "KANPRABHA_CHNPRABHA",
+        "name": "CHAMARAJANAGAR"
+      },
+      {
+        "value": "KANPRABHA_MYSPRABHA",
+        "name": "MYSORE CITY"
+      },
+      {
+        "value": "KANPRABHA_MYSRURAL",
+        "name": "MYSORE RURAL"
+      },
+      {
+        "value": "KANPRABHA_KLRCBPRABHA",
+        "name": "KOLAR"
+      },
+      {
+        "value": "KANPRABHA_HSNPRABHA",
+        "name": "HASSAN"
+      },
+      {
+        "value": "KANPRABHA_HL",
+        "name": "HUBBALLI"
+      },
+      {
+        "value": "KANPRABHA_GDGPRABHA",
+        "name": "GADAG"
+      },
+      {
+        "value": "KANPRABHA_BLYPRABHA",
+        "name": "BALLARY"
+      },
+      {
+        "value": "KANPRABHA_KPLPRABHA",
+        "name": "KOPPAL"
+      },
+      {
+        "value": "KANPRABHA_KWRPRABHA",
+        "name": "UTTARA KANNADA"
+      },
+      {
+        "value": "KANPRABHA_HVRPRABHA",
+        "name": "HAVERI"
+      },
+      {
+        "value": "KANPRABHA_GB",
+        "name": "KALABURAGI"
+      },
+      {
+        "value": "KANPRABHA_RC",
+        "name": "RAICHUR"
+      },
+      {
+        "value": "KANPRABHA_BR",
+        "name": "BIDAR"
+      },
+      {
+        "value": "KANPRABHA_YR",
+        "name": "YADAGIRI"
+      },
+      {
+        "value": "KANPRABHA_BN",
+        "name": "BELAGAVI"
+      },
+      {
+        "value": "KANPRABHA_BGMRUR",
+        "name": "BELAGAVI RURAL"
+      },
+      {
+        "value": "KANPRABHA_VJPGOAPRABHA",
+        "name": "VIJAYAPURA"
+      },
+      {
+        "value": "KANPRABHA_BKTPRABHA",
+        "name": "BAGALKOTE"
+      },
+      {
+        "value": "KANPRABHA_CTD",
+        "name": "SHIVAMOGGA"
+      },
+      {
+        "value": "KANPRABHA_CKMPRABHA",
+        "name": "CHIKKAMAGALURU"
+      },
+      {
+        "value": "KANPRABHA_DVGPRABHA",
+        "name": "DAVANAGERE"
+      },
+      {
+        "value": "KANPRABHA_CTDPRABHA",
+        "name": "CHITRADURGA"
+      },
+      {
+        "value": "KANPRABHA_MN",
+        "name": "MANGALORE"
+      },
+      {
+        "value": "KANPRABHA_UDPPRABHA",
+        "name": "UDUPI"
+      },
+      {
+        "value": "KANPRABHA_MDKPRABHA",
+        "name": "KODAGU"
+      },
+      {
+        "value": "KANPRABHA_BNGPRABHA",
+        "name": "INDINA SPECIAL"
+      },
+      {
+        "value": "KANPRABHA_CHI",
+        "name": "CHITRAPRABHA"
+      },
+      {
+        "value": "KANPRABHA_BNU",
+        "name": "BHANUPRABHA"
+      },
+      {
+        "value": "KANPRABHA_SPMT",
+        "name": "SPECIAL SUPPLEMET"
+      },
+      {
+        "value": "KANPRABHA_S",
+        "name": "SAHITYA"
+      },
+      {
+        "value": "KANPRABHA_NRI",
+        "name": "NRI EDITION"
+      },
+      {
+        "value": "KANPRABHA_DEEPAVALI",
+        "name": "DEEPAVALI"
+      },
+      {
+        "value": "KANPRABHA_UGADI",
+        "name": "UGADI"
+      },
+      {
+        "value": "KANPRABHA_BASAVA",
+        "name": "BASAVA JAYANTI"
+      }
+    ],
+    "region_param_verified": true
+  },
+  {
+    "indupaper_slug": "aaj-ka-anand",
+    "region_scheme": "fixed_set_from_html",
+    "regions": [
+      {
+        "value": "Ppage",
+        "name": "Pune (Ppage)"
+      },
+      {
+        "value": "Mpage",
+        "name": "Mumbai (Mpage)"
+      }
+    ],
+    "region_param_verified": true
+  },
+  {
+    "indupaper_slug": "ahmedabad-mirror",
+    "region_scheme": "fixed_set_from_html",
+    "regions": [
+      {
+        "value": "Ahmedabad",
+        "name": "Ahmedabad"
+      }
+    ],
+    "region_param_verified": false
+  },
+  {
+    "indupaper_slug": "daily-excelsior",
+    "region_scheme": "fixed_set_from_html",
+    "regions": [
+      {
+        "value": "1",
+        "name": "Jammu / Edition 1"
+      }
+    ],
+    "region_param_verified": false
+  },
+  {
+    "indupaper_slug": "dainik-navajyoti",
+    "region_scheme": "sequential_ids",
+    "regions": [
+      {
+        "value": "1",
+        "name": "1"
+      },
+      {
+        "value": "2",
+        "name": "2"
+      },
+      {
+        "value": "3",
+        "name": "3"
+      },
+      {
+        "value": "4",
+        "name": "4"
+      },
+      {
+        "value": "5",
+        "name": "5"
+      },
+      {
+        "value": "6",
+        "name": "6"
+      },
+      {
+        "value": "7",
+        "name": "7"
+      },
+      {
+        "value": "8",
+        "name": "8"
+      },
+      {
+        "value": "9",
+        "name": "9"
+      },
+      {
+        "value": "10",
+        "name": "10"
+      },
+      {
+        "value": "11",
+        "name": "11"
+      },
+      {
+        "value": "12",
+        "name": "12"
+      },
+      {
+        "value": "13",
+        "name": "13"
+      },
+      {
+        "value": "14",
+        "name": "14"
+      },
+      {
+        "value": "15",
+        "name": "15"
+      },
+      {
+        "value": "16",
+        "name": "16"
+      },
+      {
+        "value": "17",
+        "name": "17"
+      },
+      {
+        "value": "18",
+        "name": "18"
+      },
+      {
+        "value": "19",
+        "name": "19"
+      },
+      {
+        "value": "20",
+        "name": "20"
+      },
+      {
+        "value": "21",
+        "name": "21"
+      },
+      {
+        "value": "22",
+        "name": "22"
+      },
+      {
+        "value": "23",
+        "name": "23"
+      },
+      {
+        "value": "24",
+        "name": "24"
+      },
+      {
+        "value": "25",
+        "name": "25"
+      },
+      {
+        "value": "26",
+        "name": "26"
+      },
+      {
+        "value": "27",
+        "name": "27"
+      },
+      {
+        "value": "28",
+        "name": "28"
+      },
+      {
+        "value": "29",
+        "name": "29"
+      },
+      {
+        "value": "30",
+        "name": "30"
+      },
+      {
+        "value": "31",
+        "name": "31"
+      },
+      {
+        "value": "32",
+        "name": "32"
+      },
+      {
+        "value": "33",
+        "name": "33"
+      },
+      {
+        "value": "34",
+        "name": "34"
+      },
+      {
+        "value": "35",
+        "name": "35"
+      },
+      {
+        "value": "36",
+        "name": "36"
+      },
+      {
+        "value": "37",
+        "name": "37"
+      },
+      {
+        "value": "38",
+        "name": "38"
+      },
+      {
+        "value": "39",
+        "name": "39"
+      },
+      {
+        "value": "40",
+        "name": "40"
+      }
+    ],
+    "region_param_verified": true
+  },
+  {
+    "indupaper_slug": "inext",
+    "region_scheme": "fixed_set_from_html",
+    "regions": [
+      {
+        "value": "1",
+        "name": "1"
+      },
+      {
+        "value": "2",
+        "name": "2"
+      },
+      {
+        "value": "3",
+        "name": "3"
+      },
+      {
+        "value": "4",
+        "name": "4"
+      },
+      {
+        "value": "6",
+        "name": "6"
+      },
+      {
+        "value": "15",
+        "name": "15"
+      },
+      {
+        "value": "16",
+        "name": "16"
+      },
+      {
+        "value": "17",
+        "name": "17"
+      },
+      {
+        "value": "18",
+        "name": "18"
+      },
+      {
+        "value": "19",
+        "name": "19"
+      },
+      {
+        "value": "20",
+        "name": "20"
+      },
+      {
+        "value": "21",
+        "name": "21"
+      }
+    ],
+    "region_param_verified": true
+  }
+]
