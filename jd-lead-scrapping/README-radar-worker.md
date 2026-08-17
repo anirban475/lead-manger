@@ -149,13 +149,21 @@ flowchart TD
 
 ### Pass 1 Gates (Cheap List Tier — $0.0005 / item)
 1. **Consultant Filter:** Drops third-party staffing agencies (`r.consultant === true`).
-2. **Freshness Filter:** Drops listings older than `max_footer_days` (default 29 days) or tagged `30+ days ago`.
-3. **Database Dedup:** Normalizes name by stripping legal suffixes (`\b(pvt|private|ltd|limited|llp|inc|co|company|industries|india)\b`) and non-alphanumerics (`/[^z0-9]/g`), checking against existing Jobdrive leads in Postgres.
+2. **Freshness Filter (The Live Gate):** Drops listings older than `max_footer_days` (default 29 days) or tagged `30+ days ago`.
+   - **Empirical Rationale & Measurements:**
+     - On Naukri, `applyCount` is **cumulative and never resets** when an employer refreshes a listing. Consequently, a long-dormant or dead posting can display thousands of applicants.
+     - When running with no freshness gate, out of 102 companies clearing the 150 volume floor, **88 were dormant**. A severe example is `R. B. CONSTRUCTION COMPANY`, which accumulated **15,942 total applicants** arriving at a trickle of ~1 applicant per day over years.
+     - Raw volume alone cannot differentiate active hiring from dormant backlog: the median `applyCount` is **283 for live listings vs 293 for dormant listings**. However, applicant velocity cleanly separates them: median velocity is **19.9 applicants/day for live postings vs 1.1 applicants/day for dormant postings**.
+     - The freshness gate is the critical filter that gives the 150 volume floor its semantic meaning. **Never widen `max_footer_days` simply to recover volume**, as doing so floods downstream operations with zombie leads.
+3. **Database Dedup:** Normalizes name by stripping legal suffixes (`\b(pvt|private|ltd|limited|llp|inc|co|company|industries|india)\b`) and non-alphanumerics (`/[^a-z0-9]/g`), checking against existing Jobdrive leads in Postgres.
 4. **Intra-batch Dedup:** Groups duplicate listings for the same company within the batch.
 
 ### Pass 2 Gates (Detailed Enrich Tier — $0.002 / item)
 1. **History Logging:** Records every enriched job into `job_apply_history` (`job_id`, normalized `company_key`, `apply_count`, `seen_at`) — *even on error or below-floor paths*.
 2. **Velocity Guard:** Drops listings with `created_age_days > 90 && velocity < 3` (where `velocity = apply_count / created_age_days`).
+   - **Primary vs Fallback Actor Rationale:**
+     - On the primary actor (`blackfalcondata~naukri-jobs-feed`), `createdDate` tracks the *refresh date* rather than the original posting date. As a result, for every live listing, `created_age_days` matches `footerLabel` age, so this guard drops 0 rows on primary runs.
+     - This guard is deliberately maintained in the workflow because it is the **sole zombie defense** available on the fallback actor `memo23~naukri-scraper` (`EYXvM0o2lS7rYzgey`), which does not provide a `footerLabel` field.
 3. **Company Grouping:** Aggregates total apply counts and collects multiple role titles and job IDs per company.
 4. **Volume Floor:** Filters companies with `apply_count_total < min_apply_count` (default 150).
 
