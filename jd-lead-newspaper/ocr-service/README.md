@@ -4,7 +4,7 @@ Standing HTTP service providing Tesseract OCR extraction for n8n workflows and i
 
 ## Specifications
 
-- **Bind Address**: `127.0.0.1:5050`
+- **Bind Address**: `172.21.0.1:5050` (Docker bridge gateway for `amatec-net`)
 - **Process Manager**: PM2 (`ocr-service`)
 - **Default Languages**: `hin+eng` (Hindi + English)
 
@@ -29,13 +29,13 @@ Performs OCR extraction on an uploaded image.
    - Form field `file` or `image` containing image binary.
    - Example:
      ```bash
-     curl -X POST http://127.0.0.1:5050/ocr -F "file=@sample.jpg" -F "lang=hin+eng"
+     curl -X POST http://172.21.0.1:5050/ocr -F "file=@sample.jpg" -F "lang=hin+eng"
      ```
 2. **JSON Base64**:
    - Body: `{"image": "<base64_string>", "lang": "hin+eng"}`
    - Example:
      ```bash
-     curl -X POST http://127.0.0.1:5050/ocr -H "Content-Type: application/json" -d '{"image": "...", "lang": "hin+eng"}'
+     curl -X POST http://172.21.0.1:5050/ocr -H "Content-Type: application/json" -d '{"image": "...", "lang": "hin+eng"}'
      ```
 
 #### Responses:

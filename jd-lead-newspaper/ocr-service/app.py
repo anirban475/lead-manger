@@ -3,7 +3,7 @@
 Tesseract OCR HTTP Service
 Provides a lightweight HTTP wrapper around Tesseract OCR for n8n workflows.
 Exposes POST /ocr accepting multipart file upload or base64 encoded JSON.
-Binds to 127.0.0.1:5050.
+Binds to 172.21.0.1:5050 (docker bridge gateway for amatec-net).
 """
 
 import os
@@ -123,4 +123,6 @@ def ocr():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5050)
+    host = os.environ.get("HOST", "172.21.0.1")
+    port = int(os.environ.get("PORT", 5050))
+    app.run(host=host, port=port)

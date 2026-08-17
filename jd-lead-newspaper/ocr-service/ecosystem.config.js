@@ -10,6 +10,7 @@ module.exports = {
       watch: false,
       max_memory_restart: '500M',
       env: {
+        HOST: '172.21.0.1',
         PORT: '5050',
         PYTHONUNBUFFERED: '1',
         OMP_THREAD_LIMIT: '1',
