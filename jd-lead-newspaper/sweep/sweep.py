@@ -21,6 +21,14 @@ from pathlib import Path
 import requests
 from PIL import Image
 
+HTTP_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/126.0 Safari/537.36"
+    )
+}
+
+
 EDITIONS = [
     {
         "key": "ht-delhi",
@@ -217,7 +225,7 @@ def process_page(edition: dict, date_obj: datetime.date, weekday: str, page_no: 
     try:
         # Stream download directly to temp file
         try:
-            r = requests.get(image_url, stream=True, timeout=60)
+            r = requests.get(image_url, headers=HTTP_HEADERS, stream=True, timeout=60)
             if r.status_code != 200:
                 status = "download_failed"
                 error = f"HTTP {r.status_code}"
@@ -400,7 +408,7 @@ def fetch_manifest(edition: dict, date_obj: datetime.date) -> tuple[list[str], s
         params["year"] = f"{date_obj.year:04d}"
 
     try:
-        res = requests.get(edition["url"], params=params, timeout=30)
+        res = requests.get(edition["url"], params=params, headers=HTTP_HEADERS, timeout=30)
         if res.status_code != 200:
             return [], "fetch_failed", f"HTTP {res.status_code}"
         data = res.json()
