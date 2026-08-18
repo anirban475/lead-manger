@@ -1,79 +1,167 @@
 # Newspaper Radar — Jobdrive
 
-A daily sweep of Indian newspaper classified recruitment ads. Newspaper job ads
-carry what job boards strip out: the employer's own phone and email, printed so
+A sweep of Indian newspaper classified recruitment ads. Newspaper job ads carry
+what job boards strip out: the employer's own phone and email, printed so
 candidates can apply direct.
 
-Built and put into production 2026-08-12.
+## Source status
 
-## Where the logic actually lives
+**Current source: indupaper.com, via OCR of real newspaper page images.**
 
-**Not in this repo.** The scheduled task reads Outline directly, because a
-scheduled session cannot load a skill body but can read a document. Change the
-doc and the next run picks it up with no deploy.
+**Ads2Publish is removed as a source (decision 2026-08-18).** It was a booking
+agency's own published-ad archive, so it only ever showed ads placed through
+that agency, never full daily editions. Its n8n workflow `aeWlxXTWGRHyGehZ` and
+the Outline "Newspaper Radar Playbook" doc still exist as historical reference.
+Do not re-enable it. Its lead-scoring and gating logic is still the pattern to
+adapt; its source is not.
 
-| Thing | Where |
+## Verified endpoint contracts
+
+All manifest endpoints live on `https://d1h47qec6ptx2j.cloudfront.net`. They
+return JSON: `{status, data: {htmlContent, totalPage}, message}` where
+`htmlContent` is a string of `<div><img src="..."/></div>` blocks.
+
+| Edition | Manifest request |
 |---|---|
-| Playbook, the source of truth | [Newspaper Radar Playbook](https://amatec.getoutline.com/doc/newspaper-radar-playbook-1V9PjBW6Uq) |
-| Run state, reject keys | [Newspaper Radar State](https://amatec.getoutline.com/doc/newspaper-radar-state-8DWnxpUKhc) |
-| Enterprise blocklist, shared with Naukri | [Enterprise Blocklist](https://amatec.getoutline.com/doc/enterprise-blocklist-kRHOVup0LR) |
-| Scheduled task | `jd-lead-newspaper`, daily 08:30 local |
-| Fetch workflow | n8n `aeWlxXTWGRHyGehZ`, "Newspaper Radar — Raw Ad Fetch" |
-| MCP tool | `fetch_newspaper_ads` on the lead-scraper MCP, `zUbadDjZ9PfMR8av` |
-| Script in this folder | `add_newspaper_mcp_tool.py`, one-off, already applied |
+| Hindustan Times, Delhi | `/hindustantimes/v2/download?citySlug=delhi&editionDate=YYYY-MM-DD` |
+| Times of India, Delhi | `/toi/v2/download?citySlug=delhi&day=DD&month=MM&year=YYYY` |
+| Times of India, Ahmedabad | `/toi/v2/download?citySlug=ahmedabad&day=DD&month=MM&year=YYYY` |
+| Mirror, Mumbai | `/mirror/v2/download?citySlug=mumbai&day=DD&month=MM&year=YYYY` |
 
-## The source
+Note that HT takes a single `editionDate` in `YYYY-MM-DD`, while TOI and Mirror
+take three separate zero-padded `day`, `month`, `year` params. Other papers in
+`indupaper-contracts.json` differ again, including case-sensitive variants
+(`editionid` vs `editionId`) and a three-letter month name for Dainik Jagran.
 
-`https://www.ads2publish.com/published-ads/{slug}/recruitments`
+Image hosts, parsed out of `htmlContent`:
 
-Ads2Publish is the booking agency's published-ad archive. It republishes
-classifieds as plain HTML text across **67 working publications**, including
-every title whose own e-paper is paywalled. Each page carries exactly ten
-classified ads plus up to two display ads, with a full category path under each.
+- HT: `www.livehindustan.com/ep-img/prod/ht-epaper/YYYY/MM/DD/pages/HT_DELH/HT_DELH_<SECTION>_B1_P0NN_YYYYMMDD_hr.webp`
+- TOI and Mirror share `andre-toi-out.s3.ap-south-1.amazonaws.com/PublicationData/<TOI|Mirror>/<EDITION>/YYYY/MM/DD/Page/DD_MM_YYYY_NNN_<EDITION>.jpg`
 
-Free, no login, updated daily. It is a rolling window, so a missed day is lost
-permanently.
+### Verified 2026-08-18
 
-**Publisher e-papers were tried first and abandoned.** Twelve English Indian
-titles, 2026-08-11: not one exposed a named job section, five were hard
-paywalled, and ads sit inside pages labelled only "Advertisement" as images. A
-vision agent asked to find them fabricated three job ads that did not exist.
+**Back-dating works.** Tested HT and TOI at 8 weeks back (2026-06-23), TOI at
+2026-01-15 (32 pages) and at 2025-08-18. All returned real editions. The 2025
+date returned only 8 pages, so older archives may thin out, but two months back
+is comfortably inside the healthy zone. This is what makes an archive backfill
+possible instead of waiting a week for live data.
 
-## Four traps found in production. Read these.
+**No Referer header is required.** Bare `curl` with no headers returns the
+image: TOI 200 / 1,881,644 bytes, HT 200 / 2,874,290 bytes. Adding
+`Referer: https://www.indupaper.com/` produced a byte-identical response.
 
-**1. WebFetch silently drops ads.** It passes every page through a summarising
-model. Ads2Publish numbers its ads sequentially and the extractions had gaps:
-Deccan Chronicle jumped 2 to 4, Namasthe Telangana 4 to 7, Kannada Prabha
-skipped 4, a dozen others the same. Those ads were fetched and thrown away before
-anyone judged them, and the rolling window means they are gone. Fixed by moving
-the fetch into n8n, which returns raw HTML with no model in the path. The
-workflow now also emits `missingIndices` as a permanent gap detector.
+## Traps
 
-**2. `update_workflow` strips credentials.** The lead-scraper MCP workflow
-serves 12 tools, **ten of which carry credentials**. The n8n MCP's own
-`get_workflow_details` returns those nodes with no credential IDs, so any
-full-replace write built from that output silently removes authentication from
-ten working tools. Verified, not theoretical. Edit that workflow in the UI or by
-targeted database update, never by re-emitting it.
+**1. `totalPage` is not a page count.** Mirror Mumbai reports `totalPage: 120`
+while returning 20 images numbered 101 to 120. It is the highest page index.
+Count the `<img>` tags instead, always.
 
-**3. A raw `active` column flip does not reload n8n.** Setting
-`workflow_entity.active` false then true in Postgres does not touch n8n's
-in-memory activation manager. During this build every acceptance check passed
-while the new tool was absent from the live MCP endpoint. Use
-`POST /api/v1/workflows/{id}/deactivate` then `/activate`, which take no request
-body and so cannot strip anything.
+**2. HT images are named `.webp` but contain JPEG bytes.** `file` confirms it.
+Never branch on the filename or extension; sniff the content.
 
-**4. The first run's numbers were wrong, and one was invented.** It reported 58
-saves and 640 ads while actually making 68 saves and fetching 614, and wrote the
-same wrong pair into three places. Worse, its "331 park ads" was a **residual**,
-computed as total minus everything else so the breakdown would balance. No park
-tally was ever made. Decisions were nearly taken on a number that was never
-observed. The playbook now carries counting rules: derive every aggregate from a
-list, never report a bucket as a residual, and assert the header equals the sum
-before writing.
+**3. The edition code varies by city and appears twice in every image URL.**
+TOI Delhi is `cap`, TOI Ahmedabad is `toiac`, Mirror Mumbai is `vkmmir`. Parse
+it from the manifest, never hardcode it.
 
-None of this affected lead data. No company, role, email or phone was ever
-invented. The failures were in counting and plumbing.
+**4. Page counts swing wildly by day.** TOI Delhi returned 14, 22, 32 and 8
+pages across four sampled dates. Size every run from its own manifest.
+
+**5. Ahmedabad Mirror inlines base64 instead of returning URLs.** It serves
+`data:image/jpeg;base64,...` directly in `htmlContent`, one page per call, 20
+calls per day, and takes no region parameter at all. It was dropped in favour
+of TOI Ahmedabad, which covers the same city at one call per day on code that
+already exists.
+
+**6. There is an ad-gate interstitial on some papers.** A "watch an ad to
+unlock 24hr access" gate was seen once on Rajasthan Patrika and cleared after
+being triggered once. Expect it elsewhere.
+
+**7. Never put a summarising model in the fetch path.** WebFetch silently
+dropped ads on the old source: Deccan Chronicle jumped 2 to 4, Namasthe
+Telangana 4 to 7, Kannada Prabha skipped 4. Fetch raw bytes.
+
+**8. A vision agent fabricated three job ads that did not exist** when asked to
+find them in publisher e-papers on 2026-08-11. OCR is deterministic; a model
+reading a page is not. If a vision pass is ever added, it needs a fixture to
+be measured against.
+
+## OCR service
+
+`ocr-service/` runs Gunicorn under pm2, bound to `172.21.0.1:5050` (the
+`amatec-net` Docker bridge gateway). `app.py` also defaults `HOST` to that
+address, but Gunicorn's `--bind` in `ecosystem.config.js` is what actually
+takes effect.
+
+Configuration, all environment variables with defaults:
+
+| Variable | Default | What it does |
+|---|---|---|
+| `OCR_TIMEOUT_SECONDS` | 300 | Tesseract subprocess timeout |
+| `OCR_WORKER_TIMEOUT` | 360 | Gunicorn worker timeout, must stay above the above |
+| `OCR_WORKERS` | 4 | Gunicorn worker count |
+| `OCR_MAX_EDGE_PX` | 2200 | Longest edge before downscaling |
+
+**Why both timeouts matter.** Until 2026-08-18 the service had two stacked 60
+second ceilings: Tesseract's subprocess timeout and Gunicorn's `--timeout 60`.
+Raising only one achieves nothing, because Gunicorn kills the worker first and
+the connection drops abruptly rather than returning a response. That is the
+leading explanation for the n8n "connection was aborted, perhaps the server is
+offline" error seen during long sequential runs.
+
+**A timeout must never look like an empty page.** The service previously
+returned HTTP 400 with `{"error": "OCR processing timed out"}`, the same shape
+as a corrupt-image error. In a sweep whose entire output is "which pages carry
+recruitment ads", a page that fails is otherwise recorded as a page with
+nothing on it, and the densest pages are exactly the ones that both time out
+and carry classifieds. It now returns HTTP 504 with `"status": "timeout"`,
+distinct from a successful `"status": "ok"` with empty text.
+
+### Measured OCR timings
+
+Live Times of India Delhi pages, full resolution, on the VPS:
+
+| Page | Image | Seconds | Chars |
+|---|---|---|---|
+| 9 | 1.67 MB | 52 | 15,788 |
+| 10 | 2.03 MB | 86 | 27,477 |
+| 12 | 1.89 MB | 89 | 24,311 |
+| 16 | 2.19 MB | 88 | 37,630 |
+
+Four pages in a single 32-page edition exceeded the old 60 second ceiling.
+Page 10 is the appointments page. Under the previous configuration the sweep
+would have recorded the one page that mattered as containing nothing.
+
+Downscaled to 2200px longest edge, the same class of page OCRs in roughly 24
+seconds and still yields 20,110 characters, so the text loss is negligible and
+the speedup is large.
+
+## Detection fixture
+
+**Times of India, Delhi, Wednesday 2026-08-12, page 10.**
+
+This is the first confirmed English recruitment page in the project. It carries
+37 phone numbers and 14 email addresses, against a typical news page of 0 to 5
+phones. Real ads found on it include:
+
+- Pinegrove School, Subathu, H.P. — Resident Medical Officer, MBBS/BAMS, salary
+  stated, applications to `office@pinegroveschool.com`
+- A 50-bed hospital in Shakti Nagar, Delhi — GNM/B.Sc nursing staff, two mobile
+  numbers printed
+- Indian Buildings Congress — Executive Director on contract
+
+Fetch it at
+`https://andre-toi-out.s3.ap-south-1.amazonaws.com/PublicationData/TOI/cap/2026/08/12/Page/12_08_2026_010_cap.jpg`
+
+Before this, the only confirmed ad anywhere in the project was Hindi (Shanti
+Mangalick Hospital, Amar Ujala Agra, 2026-08-17 page 7), which could not
+validate an English pipeline.
+
+**Phone and email density beats keyword matching for finding the section.** A
+broad keyword scan flagged 7 of the first 9 pages, all false positives, because
+ordinary news prose contains "required", "wanted" and "candidate". One page
+matched "OUR RECRUITMENT PARTNERS" and turned out to be a college advertising
+its placement partners. Contact-detail density found the real page cleanly on
+the first pass.
 
 ## Decisions worth not relitigating
 
@@ -87,64 +175,54 @@ looks.
 are India-only because a job board's location filter reflects where a company
 operates. A newspaper ad is different: paying for a classified in an Indian
 paper only makes sense if you are hiring in that paper's circulation area. The
-ad placement is the proof, and it beats the registered address. A US BPO
-advertising in the New Indian Express for a Tally accountant has an Indian back
-office; a Dubai firm advertising in a Hyderabad Urdu daily is recruiting
-Hyderabad candidates.
+ad placement is the proof and it beats the registered address.
 
 **Callability is enforced through `score`, not a new field.** The telecaller
 cockpit sorts by `score DESC` and caps at 200 rows, so score already is the
-mechanism. Park leads are clamped to 25 and sink below the cut rather than being
-withheld. Nothing in the app changed.
+mechanism. Park leads are clamped to 25 and sink below the cut rather than
+being withheld.
 
 **Warm only, no hot tier, no recurrence mechanism.** There is no `applyCount`
 equivalent in a newspaper ad. Leads go straight to contact rather than ripening.
 
-## What this source is worth
+## n8n hazards
 
-From the first production run, all figures counted rather than estimated:
+**`update_workflow` strips credentials.** The lead-scraper MCP workflow serves
+12 tools, ten of which carry credentials, and n8n's own
+`get_workflow_details` returns those nodes with no credential IDs. Any
+full-replace write built from that output silently removes authentication from
+ten working tools. Edit in the UI or by targeted database update, never by
+re-emitting the workflow.
 
-| | |
+**A raw `active` column flip does not reload n8n.** Setting
+`workflow_entity.active` false then true in Postgres does not touch n8n's
+in-memory activation manager. Use `POST /api/v1/workflows/{id}/deactivate` then
+`/activate`, which take no request body and so cannot strip anything. Exit code
+`2` from the helper scripts means the database write succeeded but n8n's memory
+is stale.
+
+**Counting rules.** Derive every aggregate from a list, never report a bucket as
+a residual, and assert the header equals the sum before writing. The first
+production run reported 58 saves and 640 ads while actually making 68 saves and
+fetching 614, and its "331 park ads" was computed as total minus everything else
+so the breakdown would balance. No park tally was ever made.
+
+## Key IDs
+
+| Thing | Where |
 |---|---|
-| Publications | 67 working |
-| Ads per full sweep | ~670 |
-| Leads saved, day one | 68 |
-| Carrying a phone | 81% |
-| Carrying an email | 70% |
-| **Business email domain** | **41%** |
-| Cross-source duplicates against 220 existing leads | 0 |
-| Government or education leakage | 0 |
+| n8n pilot workflow, indupaper | `k5ZrGIYFa9n2tyNa`, inactive, no cron yet |
+| n8n workflow, Ads2Publish, deprecated | `aeWlxXTWGRHyGehZ` |
+| Lead-scraper MCP workflow | `zUbadDjZ9PfMR8av` |
+| CTO log | Outline "Amatec System Map", `f106c70a-6126-451c-92f4-fe3028a84984` |
+| Old source playbook, reference only | Outline "Newspaper Radar Playbook", `45d91272-fb73-4938-b5d1-32be4ebf6894` |
 
-The business-domain rate is the number that justified building this. The
-estimate before starting was 8 to 12%.
+## Environment gotchas
 
-## Known limits
-
-- Ten ads per page, no pagination, no archive. Miss a day and it is gone.
-- Individual ads carry no date, so first-seen is the only date signal.
-- Apollo indexes roughly 40% of these companies. Not being in Apollo is itself
-  evidence a company is too small to buy.
-- Phone enrichment: Apollo returns named mobiles at roughly 75% on companies it
-  knows, ~9 credits each. A website scrape hits about 17% and returns a
-  switchboard. Use Apollo.
-- Single point of failure on Ads2Publish. Cache raw pulls. The CareersWave PDF
-  mirror is the fallback if it ever closes.
-
-### Trap: flipping workflow_entity.active does not reload n8n
-
-n8n holds active workflows in memory. Executing `UPDATE workflow_entity SET active = ...` directly in Postgres mutates the database row, but does not notify or reload the running n8n process.
-
-The only way to trigger a live workflow reload from a script is via the n8n REST API deactivate/activate endpoint pair (`POST /api/v1/workflows/{id}/deactivate` followed by `POST /api/v1/workflows/{id}/activate`) on `http://localhost:5678`.
-
-`add_newspaper_mcp_tool.py` retains the DB active-toggle solely as a degraded fallback when the REST API reload fails, exiting with status code `2` and printing `[RELOAD DEGRADED]` to `stderr`. An exit code of `2` indicates that while the database write succeeded, the in-memory workflow in n8n remains stale and must be manually reloaded via the n8n UI.
-
-*(Note: The regression introduced in commit `2b18006` occurred because `urllib` was never imported. A bare `except` block inside the loop swallowed the resulting `NameError`, causing the script to report `[SUCCESS]` and exit `0` without ever reloading n8n or performing a fallback).*
-
-## Bulk Save & Workflow Mutation Learnings (`save_leads_bulk`)
-
-- **`save_leads_bulk` Tool**: Exists on the `lead-scraper` MCP workflow (`zUbadDjZ9PfMR8av`). It accepts a JSON array of lead objects in a single `rows` argument (up to 200 per call) and executes a single bulk SQL upsert with `DISTINCT ON (company_key)`.
-- **Exit Code 2 from Workflow Scripts**: Exit code `2` means changes were written to the Postgres database (`workflow_entity` / `workflow_history`), but the change is **NOT live in memory** because toggling `workflow_entity.active` in the DB does not reload n8n in memory.
-- **Acceptance Criteria**: Acceptance for any n8n node mutation requires verifying a fresh-session `tools/list` on the live MCP endpoint plus performing a real write test, never relying solely on a database row or static check.
-- **Capture Integrity**: A pasted "raw" capture is not evidence unless it is the actual bytes returned. Model outputs must never reconstruct or invent tool entries; verification requires authentic raw wire bytes.
-
-
+- The SSH exec tool has a hard 45 second timeout and kills the underlying shell.
+  Launch long work with `nohup ... & disown`, then poll separately.
+- SSH exec caps commands at 1000 characters. Split long heredocs across several
+  `cat >>` calls.
+- The sandbox cannot reach the S3 image host (`403 from proxy after CONNECT`).
+  Download page images on the VPS, which has open egress.
+- Tesseract on the VPS is 5.3.4 with `eng`, `hin` and `osd` only.
