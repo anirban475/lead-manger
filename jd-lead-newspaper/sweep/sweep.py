@@ -201,6 +201,129 @@ def save_page_scan(db_path: str, db_lock: threading.Lock, row: dict):
             conn.commit()
 
 
+def update_page_scan_pass2(
+    db_path: str,
+    db_lock: threading.Lock,
+    edition_key: str,
+    date_str: str,
+    page_no: int,
+    phone_count: int | None,
+    email_count: int | None,
+    full_text: str | None,
+    pass2_seconds: float | None,
+    status: str,
+    error: str | None,
+):
+    with db_lock:
+        with sqlite3.connect(db_path) as conn:
+            conn.execute(
+                """
+                UPDATE page_scan
+                SET phone_count = ?,
+                    email_count = ?,
+                    full_text = ?,
+                    pass2_seconds = ?,
+                    status = ?,
+                    error = ?
+                WHERE edition_key = ? AND edition_date = ? AND page_no = ?
+                """,
+                (phone_count, email_count, full_text, pass2_seconds, status, error, edition_key, date_str, page_no),
+            )
+            conn.commit()
+
+
+def repass2_page(row: tuple, args, db_lock: threading.Lock) -> dict:
+    edition_key, date_str, page_no, image_url = row
+    temp_orig = None
+    phone_count = None
+    email_count = None
+    full_text = None
+    pass2_seconds = None
+    status = "ok"
+    error = None
+
+    try:
+        r = requests.get(image_url, headers=HTTP_HEADERS, stream=True, timeout=60)
+        if r.status_code != 200:
+            status = "download_failed"
+            error = f"HTTP {r.status_code}"
+            return {"status": status}
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as f_orig:
+            temp_orig = f_orig.name
+            for chunk in r.iter_content(chunk_size=65536):
+                if chunk:
+                    f_orig.write(chunk)
+
+        if os.path.getsize(temp_orig) == 0:
+            status = "download_failed"
+            error = "Empty file downloaded"
+            return {"status": status}
+
+        t0_p2 = time.perf_counter()
+        with open(temp_orig, "rb") as f_p2:
+            res2 = requests.post("http://172.21.0.1:5050/ocr?lang=eng&max_edge=0", files={"file": f_p2}, timeout=360)
+        pass2_seconds = round(time.perf_counter() - t0_p2, 3)
+
+        if res2.status_code == 504:
+            status = "timeout"
+            error = "Pass 2 OCR timed out"
+            return {"status": status}
+        elif res2.status_code != 200:
+            status = "ocr_failed"
+            error = f"Pass 2 OCR HTTP {res2.status_code}: {res2.text[:200]}"
+            return {"status": status}
+
+        p2_json = res2.json()
+        orig_sz = p2_json.get("original_size")
+        ocr_sz = p2_json.get("ocr_size")
+        if not orig_sz or not ocr_sz or orig_sz != ocr_sz:
+            status = "ocr_failed"
+            error = f"Pass 2 was downscaled: original_size={orig_sz}, ocr_size={ocr_sz}"
+            return {"status": status}
+
+        full_text = p2_json.get("text", "")
+        phone_count = len(PHONE_RE.findall(full_text))
+        email_count = len(EMAIL_RE.findall(full_text))
+
+    except requests.Timeout:
+        status = "timeout"
+        error = "Pass 2 OCR timed out"
+    except Exception as e:
+        status = "ocr_failed"
+        error = f"Pass 2 error: {e}"
+    finally:
+        if temp_orig and os.path.exists(temp_orig):
+            try:
+                os.remove(temp_orig)
+            except OSError:
+                pass
+
+        update_page_scan_pass2(
+            args.db,
+            db_lock,
+            edition_key,
+            date_str,
+            page_no,
+            phone_count,
+            email_count,
+            full_text,
+            pass2_seconds,
+            status,
+            error,
+        )
+
+        phones_str = str(phone_count) if phone_count is not None else "-"
+        emails_str = str(email_count) if email_count is not None else "-"
+        p2_sec_str = f"{pass2_seconds:.1f}s" if pass2_seconds is not None else "-"
+        print(
+            f"[repass2] {edition_key} {date_str} p{page_no:02d} phones={phones_str} emails={emails_str} {p2_sec_str} {status}",
+            flush=True,
+        )
+
+    return {"status": status}
+
+
 def process_page(edition: dict, date_obj: datetime.date, weekday: str, page_no: int, image_url: str, args, db_lock: threading.Lock) -> dict:
     edition_key = edition["key"]
     paper = edition["paper"]
@@ -280,7 +403,7 @@ def process_page(edition: dict, date_obj: datetime.date, weekday: str, page_no: 
         try:
             t0_p1 = time.perf_counter()
             with open(pass1_file, "rb") as f_p1:
-                res1 = requests.post("http://172.21.0.1:5050/ocr?lang=eng", files={"file": f_p1}, timeout=360)
+                res1 = requests.post(f"http://172.21.0.1:5050/ocr?lang=eng&max_edge={args.max_edge}", files={"file": f_p1}, timeout=360)
             pass1_seconds = round(time.perf_counter() - t0_p1, 3)
 
             if res1.status_code == 504:
@@ -310,7 +433,7 @@ def process_page(edition: dict, date_obj: datetime.date, weekday: str, page_no: 
             try:
                 t0_p2 = time.perf_counter()
                 with open(temp_orig, "rb") as f_p2:
-                    res2 = requests.post("http://172.21.0.1:5050/ocr?lang=eng", files={"file": f_p2}, timeout=360)
+                    res2 = requests.post("http://172.21.0.1:5050/ocr?lang=eng&max_edge=0", files={"file": f_p2}, timeout=360)
                 pass2_seconds = round(time.perf_counter() - t0_p2, 3)
 
                 if res2.status_code == 504:
@@ -323,6 +446,13 @@ def process_page(edition: dict, date_obj: datetime.date, weekday: str, page_no: 
                     return {"status": status}
 
                 p2_json = res2.json()
+                orig_sz = p2_json.get("original_size")
+                ocr_sz = p2_json.get("ocr_size")
+                if not orig_sz or not ocr_sz or orig_sz != ocr_sz:
+                    status = "ocr_failed"
+                    error = f"Pass 2 was downscaled: original_size={orig_sz}, ocr_size={ocr_sz}"
+                    return {"status": status}
+
                 full_text = p2_json.get("text", "")
                 phone_count = len(PHONE_RE.findall(full_text))
                 email_count = len(EMAIL_RE.findall(full_text))
@@ -428,6 +558,7 @@ def main():
     parser.add_argument("--max-edge", type=int, default=2200, help="Max edge in pixels for pass 1 downscaling")
     parser.add_argument("--workers", type=int, default=4, help="Concurrent page workers")
     parser.add_argument("--keyword-threshold", type=int, default=8, help="Keyword count threshold to trigger pass 2")
+    parser.add_argument("--repass2", action="store_true", help="Re-run pass 2 only on existing rows with keyword_count >= threshold")
     parser.add_argument("--db", type=str, default="/root/newspaper_sweep/sweep.db", help="Path to SQLite database")
     args = parser.parse_args()
 
@@ -442,6 +573,41 @@ def main():
         if not selected_editions:
             print(f"Error: No matching editions found for: {args.editions}", file=sys.stderr)
             sys.exit(1)
+
+    if args.repass2:
+        query = "SELECT edition_key, edition_date, page_no, image_url FROM page_scan WHERE keyword_count >= ?"
+        params = [args.keyword_threshold]
+        if args.editions.lower() != "all":
+            placeholders = ",".join("?" for _ in selected_editions)
+            query += f" AND edition_key IN ({placeholders})"
+            params.extend([e["key"] for e in selected_editions])
+        query += " ORDER BY edition_date DESC, edition_key, page_no"
+
+        with sqlite3.connect(args.db) as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+
+        print(f"Found {len(rows)} pages with keyword_count >= {args.keyword_threshold} to re-process pass 2")
+        if not rows:
+            return
+
+        with ThreadPoolExecutor(max_workers=args.workers) as executor:
+            futures = [
+                executor.submit(
+                    repass2_page,
+                    row_data,
+                    args,
+                    db_lock,
+                )
+                for row_data in rows
+            ]
+            for fut in as_completed(futures):
+                try:
+                    fut.result()
+                except Exception as e:
+                    print(f"Error in repass2 task: {e}", file=sys.stderr)
+        return
 
     today = datetime.date.today()
     dates = [today - datetime.timedelta(days=i) for i in range(1, args.days + 1)]

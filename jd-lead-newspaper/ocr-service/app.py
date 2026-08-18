@@ -54,7 +54,8 @@ def get_max_edge_px() -> int:
 def process_and_downscale_image(image_bytes: bytes, max_edge_px: int) -> tuple[bytes, list[int], list[int]]:
     """
     Open image using Pillow (detecting format by sniffing content).
-    If max(width, height) exceeds max_edge_px, downscale preserving aspect ratio.
+    If max(width, height) exceeds max_edge_px and max_edge_px > 0, downscale preserving aspect ratio.
+    If max_edge_px == 0, do not downscale.
     Returns (processed_image_bytes, original_size, ocr_size).
     """
     try:
@@ -63,7 +64,7 @@ def process_and_downscale_image(image_bytes: bytes, max_edge_px: int) -> tuple[b
             original_size = [orig_w, orig_h]
             longest_edge = max(orig_w, orig_h)
 
-            if longest_edge > max_edge_px:
+            if max_edge_px > 0 and longest_edge > max_edge_px:
                 scale = max_edge_px / float(longest_edge)
                 new_w = max(1, int(round(orig_w * scale)))
                 new_h = max(1, int(round(orig_h * scale)))
@@ -185,7 +186,22 @@ def ocr():
     if not image_bytes:
         return jsonify({"error": "Empty or missing image data"}), 400
 
-    max_edge_px = get_max_edge_px()
+    max_edge_param = request.args.get("max_edge")
+    if max_edge_param is None and request.is_json:
+        data = request.get_json(silent=True)
+        if isinstance(data, dict) and "max_edge" in data:
+            max_edge_param = data.get("max_edge")
+    elif max_edge_param is None and "max_edge" in request.form:
+        max_edge_param = request.form.get("max_edge")
+
+    if max_edge_param is not None:
+        val_str = str(max_edge_param).strip()
+        if not val_str.isdigit():
+            return jsonify({"error": "Invalid 'max_edge' parameter: must be a non-negative integer"}), 400
+        max_edge_px = int(val_str)
+    else:
+        max_edge_px = get_max_edge_px()
+
     try:
         ocr_bytes, original_size, ocr_size = process_and_downscale_image(image_bytes, max_edge_px)
     except ValueError:
