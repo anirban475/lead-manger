@@ -1,115 +1,88 @@
 # Recruitment day map
 
-Result of the calibration sweep, run 2026-08-18, **corrected 2026-08-19**.
+Third revision, 2026-08-19. Each revision changed the answer, so the history
+matters as much as the result.
 
-## Correction notice, read this first
+| Revision | Metric used | Winner | Why it was wrong |
+|---|---|---|---|
+| v1 | Raw phone counts | Sunday, 5.8x ahead | 54% of those phones were matrimonial ads |
+| v2 | Qualified leads per edition-day | Wednesday on rate, Sunday on volume | Schools were being dropped as coaching centres, business-email score was 4x too low |
+| **v3, current** | Qualified leads, corrected ICP rules | **Wednesday on both** | — |
 
-The first version of this document counted **matrimonial classifieds as
-recruitment**. Matrimonial ads are extremely phone-dense and use the words
-*working*, *salary*, *qualified*, *REQ*, *seeks* and *MNC*, so they passed a
-filter built on keyword count plus contact density.
+## The answer
 
-**623 of the 1,152 counted phone numbers, 54%, were matrimonial.** The
-highest-scoring page in the whole project, Times of India Delhi 2026-08-02 page
-14 with 242 phone numbers, is entirely matrimonial: "SM4 Sanadhya Gaur Brahmin
-Boy 27, 176, BTech, wrkng in Japanese Automob. Comp., Good Salary",
-"Alliance Invite".
+Measured across 12 editions and 106 qualified leads:
 
-Sunday carried nearly all of the contamination. Wednesday was clean. The
-corrected numbers below are what should be acted on.
+| Weekday | Edition-days | Leads | ICP | Leads per edition-day |
+|---|---|---|---|---|
+| **Wednesday** | 16 | **52** | 17 | **3.25** |
+| **Sunday** | 20 | 44 | 15 | 2.20 |
+| Tuesday | 8 | 6 | 3 | 0.75 |
+| Friday | 8 | 2 | 1 | 0.25 |
+| Saturday | 9 | 2 | 1 | 0.22 |
+| Monday | 12 | 0 | 0 | 0.00 |
+| Thursday | 8 | 0 | 0 | 0.00 |
+
+**Run Wednesday and Sunday.** Together they are 96 of 106 leads, 91%.
+
+Wednesday now leads on both rate and absolute volume despite fewer edition-days
+sampled. Sunday only ever looked dominant because matrimonial classifieds run on
+Sundays and the first measurement counted their phone numbers as recruitment
+contacts.
+
+**Monday and Thursday are hard zeros** across 20 edition-days combined. Drop them.
+
+Tuesday is a defensible third at 0.75 leads per edition-day, adding roughly 10%
+for 50% more runtime. Friday and Saturday rest on two leads each, which is noise
+rather than measurement.
 
 ## Method
 
-Two-pass OCR over real newspaper page images from indupaper.
+Two-pass OCR over real page images.
 
-- **Pass 1** OCRs a 2200px downscale of every page and counts recruitment
-  keywords. Cheap, roughly 13s a page.
-- **Pass 2** fires only when keyword count reaches 8, and OCRs the **original at
-  full resolution** to count phone numbers and emails. Necessary because
-  downscaling to 2200px destroys 86% of phone numbers.
+- **Pass 1** OCRs a 2200px downscale and counts recruitment keywords, ~13s a page.
+- **Pass 2** fires at 8+ keywords and OCRs the **original at full resolution**,
+  because downscaling to 2200px destroys 86% of phone numbers.
 
-A page counts as a recruitment page when it has 8+ keywords, 8+ phone numbers,
-**and more recruitment markers than matrimonial markers**. That third condition
-is the correction.
+A page yields leads only if its ads pass, in order: a hiring verb must be
+present, then matrimonial and property classifiers must not fire, then the
+sector and scoring gates.
 
-## Coverage
+## The three corrections that changed the numbers
 
-| Edition | Dates sampled | Pages OCR'd | Failures |
-|---|---|---|---|
-| Hindustan Times, Delhi | 17 | 417 | 0 |
-| Times of India, Delhi | 16 | 424 | 0 |
-| Mirror, Mumbai | 16 | 348 | 0 |
-| Times of India, Ahmedabad | 16 | 295 | 0 |
-| **Total** | **2026-08-01 to 2026-08-17** | **1,484** | **0** |
+**Matrimonial ads were counted as recruitment.** 623 of 1,152 phone numbers.
+The highest-scoring page in the project, TOI Delhi 2026-08-02 page 14 with 242
+phones, is entirely matrimonial: "SM4 Sanadhya Gaur Brahmin Boy 27, BTech, Good
+Salary", "Alliance Invite".
 
-## The corrected answer: Sunday and Wednesday, closer than they looked
+**Every school and college was dropped as a coaching centre.** 24 ads, all
+genuine schools and colleges. Anirban's rule: schools and colleges are valid
+targets, only coaching centres are dropped. Hospitals are ICP too, since they
+need educated staff, often have no HR function, and the screening load falls on
+a doctor.
 
-Genuine recruitment pages only, matrimonial excluded:
+**The business-email bonus was +5 where this repo's own README specifies +20.**
+Real employers with business domains were sitting at exactly 40 against a
+50 threshold. A CA firm hiring ten audit assistants at `hr@yardiprabhu.com` was
+being dropped as low score.
 
-| Weekday | Recruitment pages | Phones | Was, before correction |
-|---|---|---|---|
-| **Sunday** | 6 | **254** | 877 |
-| **Wednesday** | 7 | **150** | 150 |
-| Tuesday | 3 | 88 | 88 |
-| Saturday | 2 | 16 | 16 |
-| Friday | 1 | 12 | 12 |
-| Monday | 1 | 9 | 9 |
-| Thursday | 0 | 0 | 0 |
+Together: survivors 31 to 68, ICP 7 to 25, hot tier 2 to 21, on identical pages.
 
-Sunday's lead over Wednesday collapses from 5.8x to 1.7x once matrimonial ads
-are removed. Wednesday's numbers did not move at all, because Wednesday carries
-no matrimonial section.
+## The guard that keeps it honest
 
-**Sunday plus Wednesday is 404 of 529 genuine contacts, 76%.** Adding Tuesday
-takes it to 93%. Thursday remains empty.
+Widening the sector rules created a new false positive: **clinics advertising
+treatments and schools advertising admissions**, both of which carry the sector
+noun and a phone number. Real cases found: ads for piles, psoriasis and
+infertility treatment, and a college ad reading "required to submit semester fee
+of Rs. 32200... Admission Helpline".
 
-Note that Wednesday actually yields *more* recruitment pages than Sunday, 7
-against 6. Sunday wins on volume per page, not frequency.
-
-## Sector mix, and the ICP problem
-
-Keyword counts across the top flagged pages:
-
-| Sector | Mentions |
-|---|---|
-| Education (school, teacher, PGT, TGT, principal, CBSE, coaching) | 269 |
-| Medical (hospital, nurse, GNM, MBBS, RMO, pharmacist) | 96 |
-| Industrial (pharma, chemical, manufacturing, production, warehouse) | 32 |
-
-The Jobdrive ICP is small pharma, chemical and manufacturing firms. Education is
-already on the hard-drop list and coaching centres have their own reject reason.
-**The qualified yield may therefore be far below the raw contact count**, and
-that has to be measured before any of this is wired to the production leads
-database. That measurement is ACTION-004.
-
-## Genuine recruitment examples
-
-Confirmed real ads with direct employer contacts:
-
-- Pinegrove School, Subathu — Resident Medical Officer, MBBS/BAMS, salary
-  stated, `office@pinegroveschool.com`
-- A 50-bed hospital in Shakti Nagar, Delhi — GNM/B.Sc nursing staff, two mobiles
-- N.R Jindal Public School, Uttam Nagar — Principal, 9871345048
-- MBS College — lab assistants, librarian, sports coach, nurse
-
-Note that all four are education or medical. That is the pattern, not a
-coincidence.
-
-## What this means for the schedule
-
-Run **Sunday and Wednesday**. Consider Tuesday as a third day, since it now
-out-yields Saturday, Friday and Monday combined. Thursday can be dropped
-outright.
-
-At Sunday plus Wednesday, roughly 200 pages a week for the current four
-editions, about 11 minutes of OCR.
+An ad only classifies as recruitment if it contains a **hiring verb**, checked
+before the sector logic. Note that `required` must be excluded when followed by
+`to `, or the admissions ad passes.
 
 ## Caveats
 
-Two to three samples per weekday. Enough to act on, not enough to declare a
-single-sample weekday truly empty.
-
-Four English metro editions only. Hindi papers were deliberately deferred and
-are likely to carry more of the Jobdrive ICP.
+Two to three samples per weekday for most editions. Enough to act on, not enough
+to call a single-sample weekday empty.
 
 Contact counts are raw regex matches, not deduplicated or validated.
