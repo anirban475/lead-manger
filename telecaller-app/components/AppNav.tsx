@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-const NAV = [
+const BASE_NAV = [
   { href: '/queue', label: 'Queue', ico: '📋' },
   { href: '/followups', label: 'Follow-ups', ico: '📞' },
   { href: '/stats', label: 'Stats', ico: '📊' },
@@ -11,13 +11,20 @@ const NAV = [
 
 export default function AppNav({
   displayName,
+  role = 'caller',
+  isAdmin = false,
   logoutAction,
 }: {
   displayName: string;
+  role?: string;
+  isAdmin?: boolean;
   logoutAction: () => Promise<void>;
 }) {
   const path = usePathname();
   const isActive = (href: string) => path === href || path.startsWith(href + '/');
+  const navItems = isAdmin
+    ? [...BASE_NAV, { href: '/users', label: 'Users', ico: '👥' }]
+    : BASE_NAV;
 
   return (
     <>
@@ -26,7 +33,7 @@ export default function AppNav({
           <span className="dot" /> Cockpit
         </div>
         <nav>
-          {NAV.map((n) => (
+          {navItems.map((n) => (
             <Link key={n.href} href={n.href} className={`nav-link ${isActive(n.href) ? 'active' : ''}`}>
               <span className="ico">{n.ico}</span>
               {n.label}
@@ -36,7 +43,7 @@ export default function AppNav({
         <div className="spacer" />
         <div className="who">
           <b>{displayName}</b>
-          telecaller
+          {role}
         </div>
         <form action={logoutAction}>
           <button
@@ -50,7 +57,7 @@ export default function AppNav({
       </aside>
 
       <nav className="mobile-tabbar">
-        {NAV.map((n) => (
+        {navItems.map((n) => (
           <Link key={n.href} href={n.href} className={isActive(n.href) ? 'active' : ''}>
             <span className="ico">{n.ico}</span>
             {n.label}

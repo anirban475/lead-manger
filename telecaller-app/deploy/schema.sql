@@ -72,6 +72,9 @@ CREATE TABLE IF NOT EXISTS app_users (
     role text DEFAULT 'caller',
     created_at timestamptz DEFAULT now()
 );
+ALTER TABLE app_users ADD COLUMN IF NOT EXISTS is_active boolean NOT NULL DEFAULT true;
+GRANT SELECT (is_active), INSERT (is_active), UPDATE (is_active) ON app_users TO telecaller_app;
+-- Promote the owner account:  UPDATE app_users SET role='admin' WHERE email='anirban@amatec.in';
 
 -- 5. Least-privilege app role (password set separately via ALTER ROLE)
 DO $$ BEGIN

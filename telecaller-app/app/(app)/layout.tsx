@@ -11,7 +11,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="app-shell">
-      <AppNav displayName={session.displayName} logoutAction={logout} />
+      <AppNav
+        displayName={session.displayName}
+        role={session.role}
+        isAdmin={session.role === 'admin'}
+        logoutAction={logout}
+      />
       <div className="main">{children}</div>
     </div>
   );
