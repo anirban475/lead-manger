@@ -46,11 +46,12 @@ export async function verifyCredentials(email: string, password: string): Promis
     password_hash: string;
     display_name: string | null;
     role: string | null;
-  }>('SELECT email, password_hash, display_name, role FROM app_users WHERE email = $1', [
+    is_active: boolean;
+  }>('SELECT email, password_hash, display_name, role, is_active FROM app_users WHERE email = $1 AND is_active = true', [
     email.toLowerCase().trim(),
   ]);
   const u = rows[0];
-  if (!u) return null;
+  if (!u || !u.is_active) return null;
   const ok = await bcrypt.compare(password, u.password_hash);
   if (!ok) return null;
   return { email: u.email, displayName: u.display_name || u.email, role: u.role || 'caller' };
@@ -81,4 +82,27 @@ export async function getSession(): Promise<Session | null> {
   const payload = decode(token);
   if (!payload) return null;
   return { email: payload.email, displayName: payload.displayName, role: payload.role };
+}
+
+export async function requireAdmin(): Promise<Session> {
+  const session = await getSession();
+  if (!session) throw new Error('Unauthorized');
+  const rows = await query<{
+    email: string;
+    display_name: string | null;
+    role: string | null;
+    is_active: boolean;
+  }>('SELECT email, display_name, role, is_active FROM app_users WHERE email = $1 AND role = $2 AND is_active = true', [
+    session.email.toLowerCase().trim(),
+    'admin',
+  ]);
+  const u = rows[0];
+  if (!u || !u.is_active || u.role !== 'admin') {
+    throw new Error('Unauthorized');
+  }
+  return {
+    email: u.email,
+    displayName: u.display_name || u.email,
+    role: u.role || 'admin',
+  };
 }
