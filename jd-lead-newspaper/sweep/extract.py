@@ -157,14 +157,19 @@ GOV_MARKERS = [
 GOV_PATS = [re.compile(p, re.IGNORECASE) for p in GOV_MARKERS]
 
 EDU_MARKERS = [
-    r'\bschool\b', r'\bcollege\b', r'\bpgt\b', r'\btgt\b', r'\bprt\b', r'\bntt\b',
-    r'\bprincipal\b', r'\bcbse\b', r'\bicse\b', r'\bcoaching\b', r'\btuition\b',
-    r'\bacademy\b', r'\bvidyalaya\b', r'\bpublic school\b', r'\bfaculty\b',
-    r'\bprofessor\b', r'\blecturer\b', r'\bteacher\b', r'\bpre-school\b',
-    r'\bplay school\b', r'\bteachers\b', r'\beducation\b', r'\binstitute\b',
-    r'\bshikshan\b', r'\bvidyapeeth\b', r'\bteaching\b', r'\bconvent\b'
+    r'\bcoaching\b', r'\btuition\b', r'\biit-jee\b', r'\bneet\b',
+    r'\btutorials\b', r'\bentrance exam\b', r'\bcoaching centre\b', r'\bcoaching center\b'
 ]
 EDU_PATS = [re.compile(p, re.IGNORECASE) for p in EDU_MARKERS]
+
+HIRING_VERB_MARKERS = [
+    r'\brequired(?!\s+to\b)\b', r'\brequires\b', r'\bwanted\b', r'\bvacancy\b',
+    r'\bvacancies\b', r'\bvacant\b', r'\bwalk-in\b', r'\bwalkin\b', r'\brecruitment\b',
+    r'\bappointment\b', r'\bresume\b', r'\bcv\b', r'\bapply\b', r'\bhiring\b',
+    r'\bpost of\b', r'\binterview\b', r'\bcandidates\b', r'\bapplications invited\b',
+    r'\bsend biodata\b', r'आवश्यकता', r'चाहिए', r'भर्ती', r'रिक्ति'
+]
+HIRING_VERB_PATS = [re.compile(p, re.IGNORECASE) for p in HIRING_VERB_MARKERS]
 
 STAFFING_MARKERS = [
     r'\bconsultancy\b', r'\bconsultancies\b', r'\bmanpower\b', r'\bplacement\b',
@@ -187,7 +192,10 @@ ICP_MARKERS = [
     r'\bproduction\b', r'\bpackaging\b', r'\bindustrial\b', r'\bplastic\b',
     r'\bengineering\b', r'\bformulation\b', r'\bapi\b', r'\bcosmetic\b',
     r'\blaboratory\b', r'\bquality chemist\b', r'\bauto industries\b', r'\btransformer\b',
-    r'\bfoundry\b', r'\bsteel\b', r'\bmetal\b', r'\btextile\b', r'\bgarment\b'
+    r'\bfoundry\b', r'\bsteel\b', r'\bmetal\b', r'\btextile\b', r'\bgarment\b',
+    r'\bschool\b', r'\bcollege\b', r'\bvidyalaya\b', r'\bconvent\b',
+    r'\bcbse\b', r'\bicse\b', r'\buniversity\b', r'\bhospital\b',
+    r'\bnursing\b', r'\bclinic\b', r'\bdiagnostic\b', r'\bpathology\b'
 ]
 ICP_PATS = [re.compile(p, re.IGNORECASE) for p in ICP_MARKERS]
 
@@ -404,7 +412,7 @@ def score_lead(ad_text: str, roles: list[str], phone: str | None, email: str | N
     if email:
         domain = email.split('@')[-1].lower()
         if domain not in FREE_PROVIDERS:
-            score += 5
+            score += 20
 
     tier = "hot" if score >= 70 else ("warm" if score >= 50 else "drop")
     return score, tier
@@ -441,6 +449,7 @@ def main():
         "no_contact": 0,
         "size_gate": 0,
         "coaching_centre": 0,
+        "advertisement_not_vacancy": 0,
         "dupe": 0,
         "low_score": 0,
         "other": 0
@@ -501,6 +510,10 @@ def main():
 
             if not phone and not email:
                 drop_counts["no_contact"] += 1
+                continue
+
+            if not any(p.search(ad_text) for p in HIRING_VERB_PATS):
+                drop_counts["advertisement_not_vacancy"] += 1
                 continue
 
             if any(p.search(ad_text) for p in NEWS_PATS) and not any(p.search(ad_text) for p in STAFFING_PATS):
@@ -597,7 +610,7 @@ def main():
 
     print("\nRecruitment Drop-Reason Tally:")
     for reason, cnt in drop_counts.items():
-        print(f"  - {reason:15s}: {cnt:4d}")
+        print(f"  - {reason:27s}: {cnt:4d}")
 
     print("\nLead Survivor Yield:")
     print(f"  - Hot Leads (70+ pts) : {hot_count:4d}")

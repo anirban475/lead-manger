@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-19T07:16:39.324107+00:00",
+  "generated_at": "2026-08-19T09:12:36.635852+00:00",
   "total_pages_scanned": 99,
   "total_candidates": 962,
   "classification_breakdown": {
@@ -10,20 +10,21 @@
   },
   "recruitment_drop_reasons": {
     "enterprise": 1,
-    "government": 9,
+    "government": 8,
     "no_contact": 0,
     "size_gate": 0,
-    "coaching_centre": 24,
-    "dupe": 16,
-    "low_score": 51,
+    "coaching_centre": 0,
+    "advertisement_not_vacancy": 8,
+    "dupe": 17,
+    "low_score": 30,
     "other": 0
   },
   "survivors_summary": {
-    "total_survivors": 31,
-    "hot": 2,
-    "warm": 29,
-    "icp_qualified": 7,
-    "non_icp": 24
+    "total_survivors": 68,
+    "hot": 21,
+    "warm": 47,
+    "icp_qualified": 25,
+    "non_icp": 43
   },
   "acceptance_check_toi_delhi_2026_08_02_p14": {
     "total_candidates": 132,
@@ -34,6 +35,26 @@
     "survivors": 0
   },
   "sample_survivors_20": [
+    {
+      "edition_key": "toi-delhi",
+      "paper": "Times of India",
+      "city": "delhi",
+      "edition_date": "2026-08-16",
+      "weekday": "Sunday",
+      "page_no": 8,
+      "company_name": "School Reception Or",
+      "company_key": "np_schoolreceptionor",
+      "company_source": "layout_at_for",
+      "contact_phone": null,
+      "contact_email": "savanujobs@gmail.com",
+      "role_titles": [
+        "(Not specified)"
+      ],
+      "score": 55,
+      "tier": "warm",
+      "is_icp": true,
+      "raw_ad_text": "Apply within 7 Days at\nSchool Reception or Email:\nsavanujobs@gmail.com"
+    },
     {
       "edition_key": "toi-delhi",
       "paper": "Times of India",
@@ -53,6 +74,46 @@
       "tier": "warm",
       "is_icp": false,
       "raw_ad_text": "REQUIRE Fresher/E:\n\nH\u2019some Salary. # 6205521430\n\nREQUIRED: Senior\nAccountant (Male) B.Com\nExperience: 5+ Years; Location:\nNoida/Okhla, Email your CV\nto sanskartradex@gmail.com\n\nREQD Female Accountant,\nKnowledge GST, Tally,\nExcel,Word in Ashok Vihar,\nDelhi. Send Resume @\n8178857847"
+    },
+    {
+      "edition_key": "toi-delhi",
+      "paper": "Times of India",
+      "city": "delhi",
+      "edition_date": "2026-08-16",
+      "weekday": "Sunday",
+      "page_no": 8,
+      "company_name": null,
+      "company_key": null,
+      "company_source": "no_company",
+      "contact_phone": "9818811305",
+      "contact_email": "maharajaagarsainhospitalS2@gmail.com",
+      "role_titles": [
+        "(Not specified)"
+      ],
+      "score": 55,
+      "tier": "warm",
+      "is_icp": true,
+      "raw_ad_text": "agarsainwelfaresociety@ yahoo.com\nmaharajaagarsainhospitalS2@gmail.com\n\nDNC Registered GNM/B.Sc\nNursing Staff Required for a 50\nBed Hospital in Shakti Nagar,\nDelhi call 9818811305 /\n7011608936\n\nOTHER\nPROFESSIONALS\nARCHITECTS\n\nDRAFTSMAN with 2-4yrs\nexp. Aduex Display Service,\nSahibabad Indust. area,\nsuchi@aduexdisplay.com\n\nARCHITECT with certified\ncode 3-5yrs exp. Aduex Display\nService, Sahibabad Indust\narea, suchi@aduexdisplay.com"
+    },
+    {
+      "edition_key": "mirror-mumbai",
+      "paper": "Mirror",
+      "city": "mumbai",
+      "edition_date": "2026-08-16",
+      "weekday": "Sunday",
+      "page_no": 18,
+      "company_name": "Yardiprabhu",
+      "company_key": "np_yardiprabhu",
+      "company_source": "business_email_domain",
+      "contact_phone": "7045903247",
+      "contact_email": "hr@yardiprabhu.com",
+      "role_titles": [
+        "(Not specified)"
+      ],
+      "score": 55,
+      "tier": "warm",
+      "is_icp": false,
+      "raw_ad_text": "A CA firm needs 10 fresh/\nexperienced graduates as Audit\nAssistants and Ex-Bankers as\nAudit Executives having Forex\nknowledge who stay in Central\nSuburb & Navi Mumbai, Airoli,\nKharghar etc. Job location\nAiroli West. WA: 7045903247.\nEmail cv for interview:\nhr@yardiprabhu.com ."
     },
     {
       "edition_key": "mirror-mumbai",
@@ -81,18 +142,38 @@
       "edition_date": "2026-08-16",
       "weekday": "Sunday",
       "page_no": 18,
-      "company_name": null,
-      "company_key": null,
-      "company_source": "no_company",
-      "contact_phone": null,
-      "contact_email": "apitaloja@gmail.com",
+      "company_name": "Charitable",
+      "company_key": "np_charitable",
+      "company_source": "layout_at_for",
+      "contact_phone": "9821209340",
+      "contact_email": null,
       "role_titles": [
-        "(Not specified)"
+        "Dentist"
       ],
       "score": 55,
       "tier": "warm",
       "is_icp": true,
-      "raw_ad_text": "FOR TALOJA UNIT\nDYNAMIC HR WITH\n5-10 YEARS\nEXPERIENCE(MALE)\nAND PLANT\nMANAGER\n,CHEMICAL\nBACKGROUND TO\nMANAGE\nPRODUCTION\nSAFETY\nGMP,REGULATORY\nFOR MUMBAI\nOFFICE,A/C\nASSISTANT\n\nMail to:\napitaloja@gmail.com"
+      "raw_ad_text": "REQUIRED Female\nExperienced Dentist (BDS),\nPart Time for Charitable\nClinic. Contact - 9821209340"
+    },
+    {
+      "edition_key": "mirror-mumbai",
+      "paper": "Mirror",
+      "city": "mumbai",
+      "edition_date": "2026-08-16",
+      "weekday": "Sunday",
+      "page_no": 18,
+      "company_name": "Schs",
+      "company_key": "np_schs",
+      "company_source": "business_email_domain",
+      "contact_phone": "9136950844",
+      "contact_email": "hr@schs.in",
+      "role_titles": [
+        "(Not specified)"
+      ],
+      "score": 75,
+      "tier": "hot",
+      "is_icp": true,
+      "raw_ad_text": "URG Read, trnd & exp.trs\nGrade 2 to 12 sub: Eng, Phys,\nMaths, IT, PT attractive\npackage. Symbiosis Convent\nHigh School & Jr\nCollege,Kausa-Shil. Mail\nresume to : hr@schs.in/\nprincipal.kausa@schs.in\nContact on 9136950844"
     },
     {
       "edition_key": "mirror-mumbai",
@@ -121,6 +202,26 @@
       "edition_date": "2026-08-12",
       "weekday": "Wednesday",
       "page_no": 6,
+      "company_name": "Rmc Edu",
+      "company_key": "np_rmcedu",
+      "company_source": "business_email_domain",
+      "contact_phone": null,
+      "contact_email": "jobs@rmc.edu.in",
+      "role_titles": [
+        "Clerk"
+      ],
+      "score": 90,
+      "tier": "hot",
+      "is_icp": true,
+      "raw_ad_text": "required clerk\nwith 10 years of experience in\nDegree college. Candidate\nshould be experienced and\nNET/ SET qualified . Salary as\nper industry norms.Apply to\nPRINCIPAL jobs@rmc.edu.in\nWalk in interview 11.00 am to\n02.00 pm Tel 28176264/ 66/68"
+    },
+    {
+      "edition_key": "mirror-mumbai",
+      "paper": "Mirror",
+      "city": "mumbai",
+      "edition_date": "2026-08-12",
+      "weekday": "Wednesday",
+      "page_no": 6,
       "company_name": "Supersonics",
       "company_key": "np_supersonics",
       "company_source": "business_email_domain",
@@ -129,8 +230,8 @@
       "role_titles": [
         "(Not specified)"
       ],
-      "score": 55,
-      "tier": "warm",
+      "score": 70,
+      "tier": "hot",
       "is_icp": false,
       "raw_ad_text": "ANDHERI (w) based Pvt. Ltd\nCo, reqs Female (Freshers/\nInterns) for Pre-Sales cum\nTelecalling. 12th Pass & above\nImmediate joining, Salary+\nIncentives; earning potential\n40,000+ p.m. WhatsApp CV to\nSam: 7045300544.\n\nTECHNICAL\n\n3\n=\nZ\n8\noe\n8\n3\n8\n\n(E) req. exp/fresh M/F Mech.\nDraftsman, Mech.Engr, Elect-\nronic Engr./Tech. 9167620220\nmail cv: hrd@supersonics.co.in"
     },
@@ -181,6 +282,26 @@
       "edition_date": "2026-08-12",
       "weekday": "Wednesday",
       "page_no": 10,
+      "company_name": "Ymail Con",
+      "company_key": "np_ymailcon",
+      "company_source": "business_email_domain",
+      "contact_phone": null,
+      "contact_email": "srtps@ymail.con",
+      "role_titles": [
+        "Math"
+      ],
+      "score": 55,
+      "tier": "warm",
+      "is_icp": false,
+      "raw_ad_text": "TEACHER\n\nSWAMI RA\nF | i\n\na1\nsrtps@ymail.con\nREQUIRED MATH\nTGT) & Special Edu-\nator (Female). Appl\nwithin 10 days on E-mail:\nrtps@ymail.com\n\nST Matthew's Public Sch reqs\nPGT (BIO/Maths, IP), Phy Edu\n(Female), NTT, PRT, Music,\nNurse. smpschool@gmail.com\nWalkin Intrvw Aug 10-13."
+    },
+    {
+      "edition_key": "toi-delhi",
+      "paper": "Times of India",
+      "city": "delhi",
+      "edition_date": "2026-08-12",
+      "weekday": "Wednesday",
+      "page_no": 10,
       "company_name": "Garment Export",
       "company_key": "np_garmentexport",
       "company_source": "layout_at_for",
@@ -209,10 +330,30 @@
       "role_titles": [
         "(Not specified)"
       ],
-      "score": 50,
-      "tier": "warm",
-      "is_icp": false,
+      "score": 70,
+      "tier": "hot",
+      "is_icp": true,
       "raw_ad_text": "REQ. Graduate with 1-2 years\nExp. Sales Girls, Sales Boys for\nRetail Showroom, Super\nClassic, 2726/23, Beadonpura,\nKarol Bagh Mob.9354519464\n\nMEDICAL\nMEDICAL\n\nDNC Registered GNM/B.Sc\nNursing Staff Required for a 50\nBed Hospital in Shakti Nagar,\nDelhi call 9818811305 /\n7011608936"
+    },
+    {
+      "edition_key": "toi-delhi",
+      "paper": "Times of India",
+      "city": "delhi",
+      "edition_date": "2026-08-12",
+      "weekday": "Wednesday",
+      "page_no": 10,
+      "company_name": "Pinegroveschool",
+      "company_key": "np_pinegroveschool",
+      "company_source": "business_email_domain",
+      "contact_phone": null,
+      "contact_email": "office@pinegroveschool.com",
+      "role_titles": [
+        "(Not specified)"
+      ],
+      "score": 75,
+      "tier": "hot",
+      "is_icp": true,
+      "raw_ad_text": "ted in the\npristine environment. Age:\nBelow 55 preferred. Medical\nexperience in hospitals/\nschools or residential\ninstitutions preferred. Ability to\nmanage medical emergencies.\nMinimum Salary: BAMS Rs.\n90000/- MBBS Rs. 125000/-.\nHigher Salary, on merit, for\nsuitable candidates based on\ncompetency. Additional\nbenefits of PF, Gratuity, Free\nfood, accommodation and\neducation for two children.\nInterested candidates may send\ntheir CV/ Resume ASAP to:\noffice@pinegroveschool.com\nmentioning all relevant details\nand minimum expected salary\nalong with recent passport-size\nphotograph."
     },
     {
       "edition_key": "toi-delhi",
@@ -229,214 +370,70 @@
       "role_titles": [
         "Marketing Manager"
       ],
-      "score": 55,
-      "tier": "warm",
+      "score": 70,
+      "tier": "hot",
       "is_icp": false,
       "raw_ad_text": "GRADIENT_ SECURITY\nRequire GM Marketing Exp. 3-4\nYears and Marketing Manager\nExp. 2-3 years in Security\nServices, at Dwarka, Delhi, M:\n9891910695. Send resume at:\ncv@gradientsecurity.in"
-    },
-    {
-      "edition_key": "mirror-mumbai",
-      "paper": "Mirror",
-      "city": "mumbai",
-      "edition_date": "2026-08-09",
-      "weekday": "Sunday",
-      "page_no": 20,
-      "company_name": "Trimax United",
-      "company_key": "np_trimaxunited",
-      "company_source": "free_email_localpart",
-      "contact_phone": null,
-      "contact_email": "trimaxunited@gmail.com",
-      "role_titles": [
-        "(Not specified)"
-      ],
-      "score": 50,
-      "tier": "warm",
-      "is_icp": false,
-      "raw_ad_text": "GENERAL\nASSISTANTS\nFEMALE/MALE:\nEXECUTIVE ASSISTANT /\nCORPORATE EXEC. BELOW\n30YRS, FLUENT IN ENGLISH,\nCOMPUTERS, AI USE, JOB IN\n\nWORLI. SEND CV TO :\ntrimaxunited@gmail.com"
-    },
-    {
-      "edition_key": "mirror-mumbai",
-      "paper": "Mirror",
-      "city": "mumbai",
-      "edition_date": "2026-08-09",
-      "weekday": "Sunday",
-      "page_no": 20,
-      "company_name": "Rbpcareer",
-      "company_key": "np_rbpcareer",
-      "company_source": "free_email_localpart",
-      "contact_phone": null,
-      "contact_email": "rbpcareer@gmail.com",
-      "role_titles": [
-        "Accountant"
-      ],
-      "score": 50,
-      "tier": "warm",
-      "is_icp": false,
-      "raw_ad_text": "REQUIRED exp. Graduates,\nCa/Inter Ca / Article clerk\nhaving Knowledge of Tally\n/Audit / Income Tax & GST.\nEmail: rbpcareer@gmail.com\n\nACCOUNTANT\n\nREQD. SENIOR\nACCOUNTANT CUM ADMIN\n(Expert in Tally, Income Tax,\nGST etc.) Walk-IN / Email:\nsanghivac@gmail.com Sanghi\noxygen, Mani Mahal, Mathew\nRoad, Opp. Charni Road\nStation East."
-    },
-    {
-      "edition_key": "mirror-mumbai",
-      "paper": "Mirror",
-      "city": "mumbai",
-      "edition_date": "2026-08-09",
-      "weekday": "Sunday",
-      "page_no": 20,
-      "company_name": "Rail Ind",
-      "company_key": "np_railind",
-      "company_source": "business_email_domain",
-      "contact_phone": null,
-      "contact_email": "rail@railind.com",
-      "role_titles": [
-        "Accountant"
-      ],
-      "score": 55,
-      "tier": "warm",
-      "is_icp": false,
-      "raw_ad_text": "ACCOUNTANT hvg\nexperience upto finalization\nof Pvt Ltd Co's accounts in\n\u2018Tally Prime urgently\nreqiired capable graduate\ncandidate apply with\nexpected compensation to\nResistance Alloys (I) Pvt Ltd,\nNew Marine Lines, Mumbai-\n20. Email: rail@railind.com"
-    },
-    {
-      "edition_key": "mirror-mumbai",
-      "paper": "Mirror",
-      "city": "mumbai",
-      "edition_date": "2026-08-09",
-      "weekday": "Sunday",
-      "page_no": 20,
-      "company_name": null,
-      "company_key": null,
-      "company_source": "no_company",
-      "contact_phone": "8693843339",
-      "contact_email": "tdsjmk@gmail.com",
-      "role_titles": [
-        "Accountant"
-      ],
-      "score": 50,
-      "tier": "warm",
-      "is_icp": false,
-      "raw_ad_text": "REQUIRED\" \"Accountant &\nAssociates\u201d at Marol Naka,\nAndheri (East). Qualification\nB.com with 5 Year's Exp. & CA\nup to 2 year's experience, Email\nBiodata tdsjmk@gmail.com\nwhatsApp 8693843339 No Calls."
-    },
-    {
-      "edition_key": "mirror-mumbai",
-      "paper": "Mirror",
-      "city": "mumbai",
-      "edition_date": "2026-08-09",
-      "weekday": "Sunday",
-      "page_no": 20,
-      "company_name": null,
-      "company_key": null,
-      "company_source": "no_company",
-      "contact_phone": "9619830304",
-      "contact_email": null,
-      "role_titles": [
-        "Mechanical"
-      ],
-      "score": 55,
-      "tier": "warm",
-      "is_icp": true,
-      "raw_ad_text": "WANTED Mechanical\nEngineer / Diploma with\nworking knowledge of Autocad\n/ Solidworks and hands on\nexperience developing CAD 3D\nmodels and analysis for\nengineering components.\nContact 9619830304 for\nappointment."
-    },
-    {
-      "edition_key": "mirror-mumbai",
-      "paper": "Mirror",
-      "city": "mumbai",
-      "edition_date": "2026-08-09",
-      "weekday": "Sunday",
-      "page_no": 20,
-      "company_name": "Hitechcon",
-      "company_key": "np_hitechcon",
-      "company_source": "free_email_localpart",
-      "contact_phone": "9766793845",
-      "contact_email": "hitechcon@gmail.com",
-      "role_titles": [
-        "Accountant",
-        "Security Guard",
-        "Cook",
-        "Computer Operator"
-      ],
-      "score": 65,
-      "tier": "warm",
-      "is_icp": false,
-      "raw_ad_text": "VACANCIES in Colaba, Fort\n: Cook, Waiter, Clerk, Steno,\nComputer Operator, Marathi\nInterpreter & Security Guard\nAge 18-45. Accommodation\navailable. Call 9766793845 /\n7218480030 / 9665053270\n\nACCOUNTANT for\nreputed construction co.\nExperienced, contact\nurgently at Hitech\nConstruction Group,\n\n022 41201212, 9137482466 at\nA216, 217, 218, 2nd floor, A\nwing, Citi Tower, Sector-15\nCBD Belapur, Navi Mumb:\nhitechcon@gmail.com"
-    },
-    {
-      "edition_key": "mirror-mumbai",
-      "paper": "Mirror",
-      "city": "mumbai",
-      "edition_date": "2026-08-09",
-      "weekday": "Sunday",
-      "page_no": 20,
-      "company_name": null,
-      "company_key": null,
-      "company_source": "no_company",
-      "contact_phone": "9820213940",
-      "contact_email": null,
-      "role_titles": [
-        "Accountant",
-        "Driver"
-      ],
-      "score": 65,
-      "tier": "warm",
-      "is_icp": false,
-      "raw_ad_text": "Hiring : Field Sales\nExec. with Paper & Stationery\nKnowledge, Jr./Sr. Accountant,\nAccounts Admin, Exec\nAssistant, Sales Co-ord, CRM,\n\u2018Tele Caller, Data Entry/Back\nOffice Godown Keeper (Tally),\nOffice Boy, Tempo Driver, Car\nDriver. \u2014 All Min. 3-5 yrs Exp.\nLocation : Mankoli, Bhiwandi\n& Kalbadevi, Mumbai\n\nWhatsapp CV on 9820213940\n\nWITHOUT telling, know\nSolution to ur problems, love\nMarriage, videshyog, Gruh-\nKalesh, etc. We can do & show\nit.9993724766/8839954766"
     },
     {
       "edition_key": "toi-ahmedabad",
       "paper": "Times of India",
       "city": "ahmedabad",
-      "edition_date": "2026-08-05",
+      "edition_date": "2026-08-12",
       "weekday": "Wednesday",
-      "page_no": 4,
-      "company_name": "Rawji",
-      "company_key": "np_rawji",
+      "page_no": 11,
+      "company_name": "Envirowater",
+      "company_key": "np_envirowater",
       "company_source": "business_email_domain",
       "contact_phone": null,
-      "contact_email": "salesfg@rawji.com",
+      "contact_email": "info@envirowater.in",
       "role_titles": [
         "(Not specified)"
       ],
       "score": 55,
       "tier": "warm",
       "is_icp": false,
-      "raw_ad_text": "surrounding areas\nhaving experience in\nsales of building\nmaterials,\n\nSend Resume to:\nsalesfg@rawji.com\nCall : 98200 29666"
+      "raw_ad_text": "\u00bb Send your CV + recent photograph to: info@envirowater.in\n\u00bb Hard Copies will not be accepted"
     },
     {
-      "edition_key": "mirror-mumbai",
-      "paper": "Mirror",
-      "city": "mumbai",
-      "edition_date": "2026-08-05",
+      "edition_key": "toi-delhi",
+      "paper": "Times of India",
+      "city": "delhi",
+      "edition_date": "2026-08-12",
       "weekday": "Wednesday",
-      "page_no": 6,
-      "company_name": "Packaging Co.",
-      "company_key": "np_packaging",
-      "company_source": "layout_co",
-      "contact_phone": "8080000700",
-      "contact_email": null,
-      "role_titles": [
-        "Job In Western"
-      ],
-      "score": 55,
-      "tier": "warm",
-      "is_icp": true,
-      "raw_ad_text": "Packaging Co. @ Thane.\nContact : 8080000700\n\nSITUATIONS\nWANTED\n30+YEARS-TECHNO-\nCOMMERCIAL\nEXPERIENCED ENGINEER\n\nREQUIRES JOB IN WESTERN\nSUBURBS. PH: 9167057331"
-    },
-    {
-      "edition_key": "mirror-mumbai",
-      "paper": "Mirror",
-      "city": "mumbai",
-      "edition_date": "2026-08-05",
-      "weekday": "Wednesday",
-      "page_no": 6,
-      "company_name": "Aryus Lube Tech",
-      "company_key": "np_aryuslubetech",
+      "page_no": 13,
+      "company_name": "Niims Edu",
+      "company_key": "np_niimsedu",
       "company_source": "business_email_domain",
-      "contact_phone": "9326168048",
-      "contact_email": "sales@aryuslubetech.com",
+      "contact_phone": null,
+      "contact_email": "recruitment@niims.edu.in",
       "role_titles": [
-        "Telecaller"
+        "(Not specified)"
       ],
       "score": 55,
       "tier": "warm",
       "is_icp": false,
-      "raw_ad_text": "REQD. Telecaller & Sales Exe\nfor Ind & Auto Lube Co. Good\ncomm skills. Exp pref, freshers\nmay apply. Navi Mumbai. Send\nCV: sales@aryuslubetech.com\n| Call: 9326168048\n\nEDU. Counsellors Req. for\nmeeting parents & institutes.\nSell online/offline courses.\nEarn 40000+ pm.\nMumbai/Thane. PH 9594455810"
+      "raw_ad_text": "http://niims.edu.in/career/\nApplications should be submitted only in online mode\nFOR QUERIES: recruitment@niims.edu.in"
+    },
+    {
+      "edition_key": "toi-delhi",
+      "paper": "Times of India",
+      "city": "delhi",
+      "edition_date": "2026-08-12",
+      "weekday": "Wednesday",
+      "page_no": 13,
+      "company_name": "St Bstims Edu",
+      "company_key": "np_stbstimsedu",
+      "company_source": "business_email_domain",
+      "contact_phone": "9216062830",
+      "contact_email": "director@st.bstims.edu",
+      "role_titles": [
+        "(Not specified)"
+      ],
+      "score": 55,
+      "tier": "warm",
+      "is_icp": false,
+      "raw_ad_text": "You may kindly share your CV at: director@st.bstims.edu.\nFurther Details, Call : 81689 62037, 9216062830"
     }
   ]
 }
