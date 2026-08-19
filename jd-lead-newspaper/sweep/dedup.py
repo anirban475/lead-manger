@@ -490,14 +490,15 @@ def run_layer3_cross_run_dedup(collapsed_leads: list[dict], existing_leads: list
             target_key = lead["company_key"]
 
             row_payload = build_save_leads_bulk_row(
-                lead, target_key, role_titles, batch_date, score, tier
+                lead, target_key, role_titles, batch_date, score, tier, times_seen, last_seen_date
             )
             final_payload_rows.append({
                 "payload": row_payload,
                 "layer3_outcome": "new",
                 "times_seen": times_seen,
                 "last_seen_date": last_seen_date,
-                "matched_company_key": None
+                "matched_company_key": None,
+                "collapsed_lead": lead
             })
         else:
             # Matched existing lead
@@ -538,7 +539,7 @@ def run_layer3_cross_run_dedup(collapsed_leads: list[dict], existing_leads: list
                 outcome = "readvertisement"
 
             row_payload = build_save_leads_bulk_row(
-                lead, target_key, combined_roles, last_seen_date, score, tier
+                lead, target_key, combined_roles, last_seen_date, score, tier, times_seen, last_seen_date
             )
             if matched_lead.get("company_name"):
                 row_payload["company_name"] = matched_lead["company_name"]
@@ -548,14 +549,15 @@ def run_layer3_cross_run_dedup(collapsed_leads: list[dict], existing_leads: list
                 "layer3_outcome": outcome,
                 "times_seen": times_seen,
                 "last_seen_date": last_seen_date,
-                "matched_company_key": target_key
+                "matched_company_key": target_key,
+                "collapsed_lead": lead
             })
 
     return final_payload_rows, stats
 
 
-def build_save_leads_bulk_row(lead: dict, company_key: str, role_titles: list[str], posted_date: str, score: int, tier: str) -> dict:
-    """Builds a single object matching the exact 23 fields for save_leads_bulk."""
+def build_save_leads_bulk_row(lead: dict, company_key: str, role_titles: list[str], posted_date: str, score: int, tier: str, times_seen: int = 1, last_seen_date: str | None = None) -> dict:
+    """Builds a single object matching the exact fields for save_leads_bulk and leads table."""
     return {
         "company_key": company_key,
         "company_name": lead.get("company_name") or "",
@@ -579,12 +581,122 @@ def build_save_leads_bulk_row(lead: dict, company_key: str, role_titles: list[st
         "contact_name": "",
         "contact_title": "",
         "contact_linkedin": "",
-        "brand": "jobdrive"
+        "brand": "jobdrive",
+        "times_seen": str(times_seen),
+        "last_seen_date": str(last_seen_date) if last_seen_date else str(posted_date)
     }
 
 
-def execute_step4_dry_run(db_path: str):
-    """Executes Step 4 dry run and prints exact required output."""
+def save_leads_to_db(payload_rows: list[dict]):
+    """Upserts leads in batches into leads.leads."""
+    if not payload_rows:
+        return
+    batch_size = 200
+    for i in range(0, len(payload_rows), batch_size):
+        batch = payload_rows[i:i + batch_size]
+        json_data = json.dumps(batch)
+        psql_query = f"""
+INSERT INTO leads (
+    company_key, company_name, industry, size, city, roles_count, role_titles,
+    posted_date, job_urls, contact_phone, contact_email, contact_source,
+    company_website, score, tier, source_query, apply_count, role_group,
+    industry_label, contact_name, contact_title, contact_linkedin, brand,
+    times_seen, last_seen_date
+)
+SELECT DISTINCT ON (r.company_key)
+    r.company_key, r.company_name, r.industry, r.size, r.city,
+    NULLIF(r.roles_count,'')::int,
+    CASE WHEN r.role_titles LIKE '%|%' THEN string_to_array(r.role_titles,'|') ELSE string_to_array(r.role_titles,',') END,
+    NULLIF(r.posted_date,'')::date,
+    string_to_array(r.job_urls,','),
+    r.contact_phone, r.contact_email, r.contact_source, r.company_website,
+    NULLIF(r.score,'')::int, r.tier, r.source_query,
+    NULLIF(r.apply_count,'')::int,
+    r.role_group, r.industry_label, r.contact_name, r.contact_title, r.contact_linkedin, r.brand,
+    NULLIF(r.times_seen,'')::int,
+    NULLIF(r.last_seen_date,'')::date
+FROM jsonb_to_recordset($${json_data}$$::jsonb) AS r(
+    company_key text, company_name text, industry text, size text, city text,
+    roles_count text, role_titles text, posted_date text, job_urls text,
+    contact_phone text, contact_email text, contact_source text, company_website text,
+    score text, tier text, source_query text, apply_count text, role_group text,
+    industry_label text, contact_name text, contact_title text, contact_linkedin text, brand text,
+    times_seen text, last_seen_date text
+)
+ORDER BY r.company_key
+ON CONFLICT (company_key) DO UPDATE SET
+    roles_count = EXCLUDED.roles_count,
+    role_titles = EXCLUDED.role_titles,
+    posted_date = EXCLUDED.posted_date,
+    job_urls = EXCLUDED.job_urls,
+    score = EXCLUDED.score,
+    tier = EXCLUDED.tier,
+    times_seen = EXCLUDED.times_seen,
+    last_seen_date = EXCLUDED.last_seen_date,
+    source_query = COALESCE(leads.source_query, EXCLUDED.source_query),
+    apply_count = EXCLUDED.apply_count,
+    role_group = EXCLUDED.role_group,
+    industry_label = EXCLUDED.industry_label,
+    contact_name = COALESCE(leads.contact_name, EXCLUDED.contact_name),
+    contact_title = COALESCE(leads.contact_title, EXCLUDED.contact_title),
+    contact_linkedin = COALESCE(leads.contact_linkedin, EXCLUDED.contact_linkedin),
+    updated_at = now()
+RETURNING company_key, status;
+"""
+        cmd = ["docker", "exec", "-i", "shared-postgres", "psql", "-U", "admin", "-d", "leads"]
+        res = subprocess.run(cmd, input=psql_query, capture_output=True, text=True, check=True)
+
+
+def save_newspaper_ads_raw_to_db(ad_rows: list[dict]):
+    """Inserts processed ads in batches into leads_park.newspaper_ad_raw."""
+    if not ad_rows:
+        return
+    batch_size = 200
+    for i in range(0, len(ad_rows), batch_size):
+        batch = ad_rows[i:i + batch_size]
+        json_data = json.dumps(batch)
+        psql_query = f"""
+INSERT INTO newspaper_ad_raw (
+    ad_key, run_date, brand, publication, page_url, ad_index, ad_text,
+    parsed_company, parsed_city, parsed_phone, parsed_email, parsed_roles,
+    outcome, reject_reason, score, company_key
+)
+SELECT
+    r.ad_key,
+    NULLIF(r.run_date, '')::date,
+    r.brand,
+    r.publication,
+    r.page_url,
+    NULLIF(r.ad_index, '')::int,
+    r.ad_text,
+    r.parsed_company,
+    r.parsed_city,
+    r.parsed_phone,
+    r.parsed_email,
+    CASE WHEN r.parsed_roles LIKE '%|%' THEN string_to_array(r.parsed_roles, '|') ELSE string_to_array(r.parsed_roles, ',') END,
+    r.outcome,
+    NULLIF(r.reject_reason, ''),
+    NULLIF(r.score, '')::int,
+    NULLIF(r.company_key, '')
+FROM jsonb_to_recordset($${json_data}$$::jsonb) AS r(
+    ad_key text, run_date text, brand text, publication text, page_url text,
+    ad_index text, ad_text text, parsed_company text, parsed_city text,
+    parsed_phone text, parsed_email text, parsed_roles text, outcome text,
+    reject_reason text, score text, company_key text
+)
+ON CONFLICT (ad_key) DO NOTHING;
+"""
+        cmd = ["docker", "exec", "-i", "shared-postgres", "psql", "-U", "admin", "-d", "leads_park"]
+        res = subprocess.run(cmd, input=psql_query, capture_output=True, text=True, check=True)
+
+
+def execute_pipeline(db_path: str, write: bool = False):
+    """Executes dedup and re-advertisement pipeline."""
+    if write:
+        print("[MODE: WRITE] Real database writes enabled.")
+    else:
+        print("[MODE: DRY-RUN] Zero database writes (read-only mode).")
+
     existing_ad_keys = query_leads_park_ad_keys()
     existing_leads = query_existing_leads()
 
@@ -593,7 +705,7 @@ def execute_step4_dry_run(db_path: str):
     final_payload_rows, layer3_stats = run_layer3_cross_run_dedup(collapsed_leads, existing_leads)
 
     print("==================================================")
-    print("ACTION-006: STEP 4 DRY RUN REPORT")
+    print("ACTION-006: DEDUP & RE-ADVERTISEMENT REPORT")
     print("==================================================")
     print(f"1. Layer 1 Ad-Level Dedup:")
     print(f"   - Ads skipped at Layer 1 (already in newspaper_ad_raw): {ads_skipped_layer1}")
@@ -618,16 +730,71 @@ def execute_step4_dry_run(db_path: str):
     raw_payloads = [item["payload"] for item in final_payload_rows]
     print(f"\n5. Exact JSON for save_leads_bulk (First 3 rows in full):")
     print(json.dumps(raw_payloads[:3], indent=2))
-    print("\n[DRY RUN COMPLETE] Zero database writes performed.")
+
+    if write:
+        print("\nWriting leads to leads database...")
+        save_leads_to_db(raw_payloads)
+
+        raw_ad_records = []
+        for item in final_payload_rows:
+            target_ckey = item["payload"]["company_key"]
+            c_lead = item.get("collapsed_lead", {})
+            for ad in c_lead.get("all_instances", []):
+                raw_ad_records.append({
+                    "ad_key": ad["ad_key"],
+                    "run_date": str(ad.get("edition_date") or datetime.date.today().isoformat()),
+                    "brand": "jobdrive",
+                    "publication": ad.get("paper") or ad.get("edition_key") or "",
+                    "page_url": f"{ad.get('edition_key')}/{ad.get('edition_date')}/page_{ad.get('page_no')}",
+                    "ad_index": str(ad.get("page_no") or 0),
+                    "ad_text": ad.get("raw_ad_text") or "",
+                    "parsed_company": ad.get("company_name") or "",
+                    "parsed_city": ad.get("city") or "",
+                    "parsed_phone": ad.get("contact_phone") or "",
+                    "parsed_email": ad.get("contact_email") or "",
+                    "parsed_roles": "|".join(ad.get("role_titles", [])),
+                    "outcome": "saved",
+                    "reject_reason": "",
+                    "score": str(ad.get("score") or 0),
+                    "company_key": target_ckey
+                })
+
+        for ad in rejected_ads:
+            raw_ad_records.append({
+                "ad_key": ad["ad_key"],
+                "run_date": str(ad.get("edition_date") or datetime.date.today().isoformat()),
+                "brand": "jobdrive",
+                "publication": ad.get("edition_key") or "",
+                "page_url": f"{ad.get('edition_key')}/{ad.get('edition_date')}/page_{ad.get('page_no')}",
+                "ad_index": str(ad.get("page_no") or 0),
+                "ad_text": ad.get("ad_text") or "",
+                "parsed_company": "",
+                "parsed_city": "",
+                "parsed_phone": "",
+                "parsed_email": "",
+                "parsed_roles": "",
+                "outcome": "rejected",
+                "reject_reason": ad.get("reject_reason") or "other",
+                "score": str(ad.get("score") or ""),
+                "company_key": ""
+            })
+
+        print("Writing raw ads to leads_park database...")
+        save_newspaper_ads_raw_to_db(raw_ad_records)
+        print(f"\n[WRITE COMPLETE] Successfully written {len(raw_payloads)} leads and {len(raw_ad_records)} raw ads.")
+    else:
+        print("\n[DRY RUN COMPLETE] Zero database writes performed.")
 
 
 def main():
     parser = argparse.ArgumentParser(description="ACTION-006 Newspaper Dedup & Re-advertisement Runner")
     parser.add_argument("--db", type=str, default="/root/newspaper_sweep/sweep.db", help="Path to SQLite sweep database")
-    parser.add_argument("--dry-run", action="store_true", default=True, help="Perform dry run without database writes")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--dry-run", action="store_true", default=False, help="Perform dry run without database writes (default)")
+    group.add_argument("--write", action="store_true", default=False, help="Perform real database writes")
     args = parser.parse_args()
 
-    execute_step4_dry_run(args.db)
+    execute_pipeline(args.db, write=args.write)
 
 
 if __name__ == "__main__":

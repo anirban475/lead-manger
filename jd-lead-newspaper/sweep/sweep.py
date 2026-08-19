@@ -31,12 +31,12 @@ HTTP_HEADERS = {
 
 EDITIONS = [
     {
-        "key": "ht-delhi",
-        "paper": "Hindustan Times",
-        "city": "delhi",
-        "url": "https://d1h47qec6ptx2j.cloudfront.net/hindustantimes/v2/download",
-        "date_style": "iso",
-        "params": {"citySlug": "delhi"},
+        "key": "toi-mumbai",
+        "paper": "Times of India",
+        "city": "mumbai",
+        "url": "https://d1h47qec6ptx2j.cloudfront.net/toi/v2/download",
+        "date_style": "dmy",
+        "params": {"citySlug": "mumbai"},
     },
     {
         "key": "toi-delhi",
@@ -47,12 +47,28 @@ EDITIONS = [
         "params": {"citySlug": "delhi"},
     },
     {
-        "key": "toi-ahmedabad",
+        "key": "toi-jaipur",
         "paper": "Times of India",
-        "city": "ahmedabad",
+        "city": "jaipur",
         "url": "https://d1h47qec6ptx2j.cloudfront.net/toi/v2/download",
         "date_style": "dmy",
-        "params": {"citySlug": "ahmedabad"},
+        "params": {"citySlug": "jaipur"},
+    },
+    {
+        "key": "toi-bhopal",
+        "paper": "Times of India",
+        "city": "bhopal",
+        "url": "https://d1h47qec6ptx2j.cloudfront.net/toi/v2/download",
+        "date_style": "dmy",
+        "params": {"citySlug": "bhopal"},
+    },
+    {
+        "key": "toi-bangalore",
+        "paper": "Times of India",
+        "city": "bangalore",
+        "url": "https://d1h47qec6ptx2j.cloudfront.net/toi/v2/download",
+        "date_style": "dmy",
+        "params": {"citySlug": "bangalore"},
     },
     {
         "key": "mirror-mumbai",
@@ -61,6 +77,14 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/mirror/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "mumbai"},
+    },
+    {
+        "key": "excelsior-jammu",
+        "paper": "Daily Excelsior",
+        "city": "jammu",
+        "url": "https://d1h47qec6ptx2j.cloudfront.net/dailyexcelsior/v1/download",
+        "date_style": "ddmmyyyy_slash",
+        "params": {"editionid": "1"},
     },
 ]
 
@@ -536,6 +560,8 @@ def fetch_manifest(edition: dict, date_obj: datetime.date) -> tuple[list[str], s
         params["day"] = f"{date_obj.day:02d}"
         params["month"] = f"{date_obj.month:02d}"
         params["year"] = f"{date_obj.year:04d}"
+    elif date_style == "ddmmyyyy_slash":
+        params["editiondate"] = date_obj.strftime("%d/%m/%Y")
 
     try:
         res = requests.get(edition["url"], params=params, headers=HTTP_HEADERS, timeout=30)
