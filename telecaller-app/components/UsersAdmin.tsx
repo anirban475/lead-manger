@@ -158,12 +158,12 @@ export default function UsersAdmin({ users, currentEmail }: UsersAdminProps) {
                         type="button"
                         className="btn ghost"
                         style={{ padding: '4px 10px', fontSize: '12px' }}
-                        disabled={self || isPending}
+                        disabled={isPending}
                         onClick={() => {
                           setResetError(null);
                           setResetTargetUser(u);
                         }}
-                        title={self ? 'You cannot reset your own password here' : 'Reset password'}
+                        title={self ? 'Reset your own password' : 'Reset password'}
                       >
                         Reset password
                       </button>
