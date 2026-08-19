@@ -1,8 +1,22 @@
 # Recruitment day map
 
-Result of the calibration sweep, run 2026-08-18. This is the answer to "which
-weekday does each paper run its appointments section", and it is what the
-production schedule should be built on.
+Result of the calibration sweep, run 2026-08-18, **corrected 2026-08-19**.
+
+## Correction notice, read this first
+
+The first version of this document counted **matrimonial classifieds as
+recruitment**. Matrimonial ads are extremely phone-dense and use the words
+*working*, *salary*, *qualified*, *REQ*, *seeks* and *MNC*, so they passed a
+filter built on keyword count plus contact density.
+
+**623 of the 1,152 counted phone numbers, 54%, were matrimonial.** The
+highest-scoring page in the whole project, Times of India Delhi 2026-08-02 page
+14 with 242 phone numbers, is entirely matrimonial: "SM4 Sanadhya Gaur Brahmin
+Boy 27, 176, BTech, wrkng in Japanese Automob. Comp., Good Salary",
+"Alliance Invite".
+
+Sunday carried nearly all of the contamination. Wednesday was clean. The
+corrected numbers below are what should be acted on.
 
 ## Method
 
@@ -14,11 +28,9 @@ Two-pass OCR over real newspaper page images from indupaper.
   full resolution** to count phone numbers and emails. Necessary because
   downscaling to 2200px destroys 86% of phone numbers.
 
-A page counts as a recruitment page when it has **8 or more keywords AND 8 or
-more phone numbers**. Both conditions matter. Keywords alone produce constant
-false positives, because ordinary news prose contains "required", "wanted" and
-"candidate". Contact density alone would catch property and matrimonial
-classifieds.
+A page counts as a recruitment page when it has 8+ keywords, 8+ phone numbers,
+**and more recruitment markers than matrimonial markers**. That third condition
+is the correction.
 
 ## Coverage
 
@@ -30,81 +42,74 @@ classifieds.
 | Times of India, Ahmedabad | 16 | 295 | 0 |
 | **Total** | **2026-08-01 to 2026-08-17** | **1,484** | **0** |
 
-Two to three samples of each weekday per edition.
+## The corrected answer: Sunday and Wednesday, closer than they looked
 
-## The answer: Sunday, then Wednesday
+Genuine recruitment pages only, matrimonial excluded:
 
-Contacts recovered, aggregated across all four editions:
-
-| Weekday | Recruitment pages | Phones | Emails |
+| Weekday | Recruitment pages | Phones | Was, before correction |
 |---|---|---|---|
-| **Sunday** | **11** | **877** | **151** |
-| **Wednesday** | **7** | **150** | **59** |
-| Tuesday | 3 | 88 | 21 |
-| Saturday | 2 | 16 | 15 |
-| Friday | 1 | 12 | 3 |
-| Monday | 1 | 9 | 3 |
+| **Sunday** | 6 | **254** | 877 |
+| **Wednesday** | 7 | **150** | 150 |
+| Tuesday | 3 | 88 | 88 |
+| Saturday | 2 | 16 | 16 |
+| Friday | 1 | 12 | 12 |
+| Monday | 1 | 9 | 9 |
 | Thursday | 0 | 0 | 0 |
 
-**Sunday alone carries 74% of every contact found. Sunday plus Wednesday carries
-89%.** Thursday produced nothing at all across eight edition-days.
+Sunday's lead over Wednesday collapses from 5.8x to 1.7x once matrimonial ads
+are removed. Wednesday's numbers did not move at all, because Wednesday carries
+no matrimonial section.
 
-## Per edition
+**Sunday plus Wednesday is 404 of 529 genuine contacts, 76%.** Adding Tuesday
+takes it to 93%. Thursday remains empty.
 
-Reads as: editions containing a recruitment page / editions sampled.
+Note that Wednesday actually yields *more* recruitment pages than Sunday, 7
+against 6. Sunday wins on volume per page, not frequency.
 
-| Edition | Mon | Tue | Wed | Thu | Fri | Sat | Sun |
-|---|---|---|---|---|---|---|---|
-| Hindustan Times, Delhi | 0/3 | 1/2 | 1/2 | 0/2 | 0/2 | 1/3 | 1/3 |
-| Times of India, Delhi | 1/3 | 1/2 | **2/2** | 0/2 | 0/2 | 0/2 | **2/3** |
-| Times of India, Ahmedabad | 0/3 | 0/2 | 1/2 | 0/2 | 0/2 | 0/2 | **2/3** |
-| Mirror, Mumbai | 0/3 | 0/2 | **2/2** | 0/2 | 1/2 | 1/2 | **3/3** |
+## Sector mix, and the ICP problem
 
-Mirror Mumbai hit on every Sunday sampled. Times of India and Mirror both hit on
-every Wednesday sampled.
+Keyword counts across the top flagged pages:
 
-## Highest yielding pages
+| Sector | Mentions |
+|---|---|
+| Education (school, teacher, PGT, TGT, principal, CBSE, coaching) | 269 |
+| Medical (hospital, nurse, GNM, MBBS, RMO, pharmacist) | 96 |
+| Industrial (pharma, chemical, manufacturing, production, warehouse) | 32 |
 
-| Edition | Date | Weekday | Page | Keywords | Phones | Emails |
-|---|---|---|---|---|---|---|
-| TOI Delhi | 2026-08-02 | Sunday | 14 | 11 | **242** | 29 |
-| TOI Delhi | 2026-08-16 | Sunday | 12 | 8 | **177** | 18 |
-| TOI Ahmedabad | 2026-08-09 | Sunday | 8 | 14 | 88 | 9 |
-| TOI Delhi | 2026-08-16 | Sunday | 8 | 13 | 75 | 14 |
-| TOI Ahmedabad | 2026-08-02 | Sunday | 6 | 10 | 70 | 8 |
-| HT Delhi | 2026-08-02 | Sunday | 21 | 15 | 62 | 18 |
-| HT Delhi | 2026-08-04 | Tuesday | 12 | 12 | 58 | 9 |
-| TOI Delhi | 2026-08-05 | Wednesday | 8 | 12 | 41 | 13 |
-| Mirror Mumbai | 2026-08-09 | Sunday | 20 | 33 | 35 | 18 |
+The Jobdrive ICP is small pharma, chemical and manufacturing firms. Education is
+already on the hard-drop list and coaching centres have their own reject reason.
+**The qualified yield may therefore be far below the raw contact count**, and
+that has to be measured before any of this is wired to the production leads
+database. That measurement is ACTION-004.
 
-Total across all flagged pages: **1,222 phone numbers and 507 email addresses**
-from 17 days of four editions.
+## Genuine recruitment examples
 
-Page numbers cluster in the single digits to low twenties, but they move, so the
-production run still has to scan the whole edition rather than jump to a fixed
-page.
+Confirmed real ads with direct employer contacts:
+
+- Pinegrove School, Subathu — Resident Medical Officer, MBBS/BAMS, salary
+  stated, `office@pinegroveschool.com`
+- A 50-bed hospital in Shakti Nagar, Delhi — GNM/B.Sc nursing staff, two mobiles
+- N.R Jindal Public School, Uttam Nagar — Principal, 9871345048
+- MBS College — lab assistants, librarian, sports coach, nurse
+
+Note that all four are education or medical. That is the pattern, not a
+coincidence.
 
 ## What this means for the schedule
 
-Run **Sunday and Wednesday only**. That is 2 days a week instead of 7, a 71% cut
-in compute and bandwidth, for 89% of the available contacts. Thursday and Friday
-can be dropped outright.
+Run **Sunday and Wednesday**. Consider Tuesday as a third day, since it now
+out-yields Saturday, Friday and Monday combined. Thursday can be dropped
+outright.
 
-Estimated production load on the Sunday plus Wednesday schedule: roughly 8
-edition-days a week at ~25 pages each, so about 200 pages a week. At the
-measured 13s a page across 4 workers that is roughly 11 minutes a week.
+At Sunday plus Wednesday, roughly 200 pages a week for the current four
+editions, about 11 minutes of OCR.
 
-## Caveats worth stating
+## Caveats
 
-Two to three samples per weekday. Strong enough to act on, not enough to call a
-single-sample weekday like Monday truly empty. Extending the archive backfill
-past 17 days would firm up the weak cells; the runner is resumable, so extending
-costs nothing already spent.
+Two to three samples per weekday. Enough to act on, not enough to declare a
+single-sample weekday truly empty.
 
-The sweep covers four English metro editions. Hindi papers (Dainik Jagran,
-Hindustan) were deliberately deferred and are likely to carry more of the
-Jobdrive ICP: small pharma, chemical and manufacturing firms with thin HR. This
-map should not be assumed to transfer to them.
+Four English metro editions only. Hindi papers were deliberately deferred and
+are likely to carry more of the Jobdrive ICP.
 
-Contact counts are raw regex matches, not deduplicated or validated. The 242
-figure on TOI Delhi 2026-08-02 includes repeats within the page.
+Contact counts are raw regex matches, not deduplicated or validated.
