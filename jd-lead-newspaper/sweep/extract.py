@@ -458,25 +458,31 @@ CATEGORY_HEADER_RE = re.compile(
 )
 
 
-def extract_clean_ad_text(text: str, anchor_s: int, anchor_e: int, prev_anchor_e: int = 0, next_anchor_s: int | None = None, window: int = 1200) -> str:
+def extract_clean_ad_text(text: str, anchor_s: int, anchor_e: int, prev_anchor_e: int = 0, next_anchor_s: int | None = None, window: int = 1200, anchor_emails: list[str] | None = None) -> str:
     raw_left = max(0, anchor_s - window)
     window_snippet = text[raw_left:anchor_s]
 
-    preceding_contacts = []
-    for m in PHONE_RE.finditer(window_snippet):
-        preceding_contacts.append((raw_left + m.start(), raw_left + m.end(), 'phone', m.group(0)))
+    anchor_domains = {e.split('@')[-1].strip().lower() for e in anchor_emails if '@' in e} if anchor_emails else set()
+
+    preceding_breaking_contacts = []
     for m in EMAIL_RE.finditer(window_snippet):
-        if 'timesofindia' not in m.group(0).lower() and 'hindustantimes' not in m.group(0).lower():
-            preceding_contacts.append((raw_left + m.start(), raw_left + m.end(), 'email', m.group(0)))
-    preceding_contacts.sort()
+        em_str = m.group(0).strip().lower()
+        if 'timesofindia' in em_str or 'hindustantimes' in em_str:
+            continue
+        em_domain = em_str.split('@')[-1] if '@' in em_str else ''
+        if anchor_domains:
+            if em_domain not in anchor_domains:
+                preceding_breaking_contacts.append((raw_left + m.start(), raw_left + m.end()))
+        else:
+            preceding_breaking_contacts.append((raw_left + m.start(), raw_left + m.end()))
+    preceding_breaking_contacts.sort()
 
     had_prec_contact = False
     effective_left = raw_left
-    if preceding_contacts:
-        latest_prec = preceding_contacts[-1]
+    if preceding_breaking_contacts:
+        latest_prec = preceding_breaking_contacts[-1]
         between_prec_and_anchor = text[latest_prec[1]:anchor_s]
-        has_cat = bool(CATEGORY_HEADER_RE.search(between_prec_and_anchor))
-        if not has_cat:
+        if not CATEGORY_HEADER_RE.search(between_prec_and_anchor):
             effective_left = latest_prec[1]
             had_prec_contact = True
 
@@ -500,17 +506,22 @@ def extract_clean_ad_text(text: str, anchor_s: int, anchor_e: int, prev_anchor_e
     raw_right = min(len(text), next_anchor_s if next_anchor_s is not None else len(text), anchor_e + 150)
     snippet_after = text[anchor_e:raw_right]
 
-    following_contacts = []
-    for m in PHONE_RE.finditer(snippet_after):
-        following_contacts.append((anchor_e + m.start(), anchor_e + m.end(), 'phone'))
+    following_breaking_contacts = []
     for m in EMAIL_RE.finditer(snippet_after):
-        if 'timesofindia' not in m.group(0).lower() and 'hindustantimes' not in m.group(0).lower():
-            following_contacts.append((anchor_e + m.start(), anchor_e + m.end(), 'email'))
-    following_contacts.sort()
+        em_str = m.group(0).strip().lower()
+        if 'timesofindia' in em_str or 'hindustantimes' in em_str:
+            continue
+        em_domain = em_str.split('@')[-1] if '@' in em_str else ''
+        if anchor_domains:
+            if em_domain not in anchor_domains:
+                following_breaking_contacts.append((anchor_e + m.start(), anchor_e + m.end()))
+        else:
+            following_breaking_contacts.append((anchor_e + m.start(), anchor_e + m.end()))
+    following_breaking_contacts.sort()
 
     effective_right = raw_right
-    if following_contacts:
-        effective_right = min(effective_right, following_contacts[0][0])
+    if following_breaking_contacts:
+        effective_right = min(effective_right, following_breaking_contacts[0][0])
 
     end_sec = list(CATEGORY_HEADER_RE.finditer(text[anchor_e:effective_right]))
     end_trig = list(TRIGGER_RE.finditer(text[anchor_e:effective_right]))
@@ -787,7 +798,10 @@ def main():
             prev_e = clusters[i-1][-1][1] if i > 0 else 0
             next_s = clusters[i+1][0][0] if i < len(clusters)-1 else len(text)
 
-            ad_text = extract_clean_ad_text(text, min_s, max_e, prev_e, next_s)
+            cl_emails = [a[3] for a in cl if a[2] == 'email']
+            cl_phones = [a[3] for a in cl if a[2] == 'phone']
+
+            ad_text = extract_clean_ad_text(text, min_s, max_e, prev_e, next_s, anchor_emails=cl_emails)
             cat, m_cnt, p_cnt, r_cnt = classify_candidate(ad_text)
             classification_counts[cat] += 1
 
@@ -798,11 +812,8 @@ def main():
             if cat != "recruitment":
                 continue
 
-            phones = [a[3] for a in cl if a[2] == 'phone']
-            emails = [a[3] for a in cl if a[2] == 'email']
-
-            phone = phones[0] if phones else None
-            email = emails[0] if emails else None
+            phone = cl_phones[0] if cl_phones else None
+            email = cl_emails[0] if cl_emails else None
 
             if not phone and not email:
                 drop_counts["no_contact"] += 1

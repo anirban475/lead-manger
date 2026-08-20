@@ -185,9 +185,10 @@ def run_layer1_and_extract(db_path: str, existing_ad_keys: set[str]) -> tuple[li
             max_e = max(a[1] for a in cl)
 
             prev_e = clusters[i-1][-1][1] if i > 0 else 0
-            next_s = clusters[i+1][0][0] if i < len(clusters)-1 else len(text)
+            phones = [a[3] for a in cl if a[2] == "phone"]
+            emails = [a[3] for a in cl if a[2] == "email"]
 
-            ad_text = extract_clean_ad_text(text, min_s, max_e, prev_e, next_s)
+            ad_text = extract_clean_ad_text(text, min_s, max_e, prev_e, next_s, anchor_emails=emails)
             ad_key = compute_ad_key(ed_key, ed_date, pno, ad_text)
 
             if ad_key in existing_ad_keys:
@@ -206,9 +207,6 @@ def run_layer1_and_extract(db_path: str, existing_ad_keys: set[str]) -> tuple[li
                     "reject_reason": "other"
                 })
                 continue
-
-            phones = [a[3] for a in cl if a[2] == "phone"]
-            emails = [a[3] for a in cl if a[2] == "email"]
 
             phone = phones[0] if phones else None
             email = emails[0] if emails else None
