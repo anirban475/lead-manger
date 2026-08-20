@@ -81,6 +81,32 @@ else
     LEADS_SUMMARY="$LEADS_LANDED"
 fi
 
+# Stage 4: Apollo Enrichment (must run AFTER dedup so credits are only
+# ever spent on leads that actually survived into the database)
+echo ""
+echo "=== STAGE 4: APOLLO ENRICHMENT ==="
+ENRICH_TMP=$(mktemp)
+set +e
+"$PYTHON_BIN" "$SCRIPT_DIR/enrich.py" --write | tee "$ENRICH_TMP"
+ENRICH_EXIT="${PIPESTATUS[0]}"
+set -e
+if [ $ENRICH_EXIT -ne 0 ]; then
+    rm -f "$ENRICH_TMP"
+    echo "" >&2
+    echo "[ABORT] Stage 4 (enrich.py) failed with exit code $ENRICH_EXIT." >&2
+    exit $ENRICH_EXIT
+fi
+
+CREDITS_SPENT=$(grep -i "Total actual credits spent:" "$ENRICH_TMP" | tail -n 1 | awk -F: '{print $2}' | awk '{print $1}' | tr -d ' ' || echo "0")
+PH_DIRECT=$(grep -i "Direct person phones resolved" "$ENRICH_TMP" | tail -n 1 | awk -F: '{print $2}' | tr -d ' ' || echo "0")
+PH_ORG=$(grep -i "Organization phones resolved" "$ENRICH_TMP" | tail -n 1 | awk -F: '{print $2}' | tr -d ' ' || echo "0")
+rm -f "$ENRICH_TMP"
+
+[ -z "$CREDITS_SPENT" ] && CREDITS_SPENT=0
+[ -z "$PH_DIRECT" ] && PH_DIRECT=0
+[ -z "$PH_ORG" ] && PH_ORG=0
+PHONES_RESOLVED=$(( PH_DIRECT + PH_ORG ))
+
 # Extract page scan metrics and qualified leads count
 METRICS_JSON=$("$PYTHON_BIN" -c "
 import sqlite3, json, sys
@@ -121,5 +147,5 @@ QUALIFIED_LEADS=$(echo "$METRICS_JSON" | "$PYTHON_BIN" -c "import sys, json; pri
 echo ""
 echo "=================================================="
 echo "RADAR RUN COMPLETED: $(date '+%Y-%m-%d %H:%M:%S')"
-echo "SUMMARY: pages scanned: $PAGES_SCANNED, pages failed: $PAGES_FAILED, qualified leads: $QUALIFIED_LEADS, new leads written: $LEADS_SUMMARY, re-advertisements: $READV_LEADS"
+echo "SUMMARY: pages scanned: $PAGES_SCANNED, pages failed: $PAGES_FAILED, qualified leads: $QUALIFIED_LEADS, new leads written: $LEADS_SUMMARY, re-advertisements: $READV_LEADS, credits spent: $CREDITS_SPENT, phones resolved: $PHONES_RESOLVED"
 echo "=================================================="
