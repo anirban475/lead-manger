@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-ACTION-006: Dedup, Re-advertisement Signal, and Writing to the Leads Database
+ACTION-006 / ACTION-011: Dedup, Re-advertisement Signal, and Writing to the Leads Database
 
 Three-layer pipeline:
   Layer 1: Ad level hash dedup against leads_park.newspaper_ad_raw
-  Layer 2: Within-run contact level collapsing (key on phone/email, never company name)
+  Layer 2: Within-run contact level collapsing on (contact, edition_date)
   Layer 3: Cross-run comparison against leads.leads (syndication vs re-advertisement)
 
 Rules:
-  - Layer 2 keys strictly on contact (phone/email), never company name.
+  - Layer 2 keys strictly on (contact, edition_date), never company name alone or collapsing across dates.
   - Same edition date = syndication (union roles, do not increment times_seen, do not change score/tier).
   - Later edition date = re-advertisement (times_seen +1, score +15 capped at 100, tier = 'hot', union roles).
   - NULL last_seen_date treated as unknown: set date, do not award bonus.
@@ -330,39 +330,43 @@ def run_layer1_and_extract(db_path: str, existing_ad_keys: set[str]) -> tuple[li
 
 def run_layer2_contact_collapse(qualified_ads: list[dict]) -> tuple[list[dict], int, int]:
     """
-    Layer 2: Within a run, collapse ads sharing phone or email.
-    Keys strictly on contact (phone / email), NEVER on company name.
+    Layer 2: Within a run, collapse ads sharing phone or email ON THE SAME EDITION DATE.
+    Keys strictly on (contact, edition_date), NEVER on company name alone, and NEVER across dates.
     Preserves highest scoring instance and unions role titles.
     Returns (collapsed_leads, same_date_syndication_count, genuine_duplicates_count).
     """
-    phone_to_group = {}
-    email_to_group = {}
+    phone_date_to_group = {}
+    email_date_to_group = {}
     groups = []  # list of lists of ads
 
     for ad in qualified_ads:
+        ed_date = ad["edition_date"]
         p10 = get_phone_last10(ad["contact_phone"])
         em = get_email_lower(ad["contact_email"])
 
+        p_key = (p10, ed_date) if p10 else None
+        e_key = (em, ed_date) if em else None
+
         matched_group_indices = set()
-        if p10 and p10 in phone_to_group:
-            matched_group_indices.add(phone_to_group[p10])
-        if em and em in email_to_group:
-            matched_group_indices.add(email_to_group[em])
+        if p_key and p_key in phone_date_to_group:
+            matched_group_indices.add(phone_date_to_group[p_key])
+        if e_key and e_key in email_date_to_group:
+            matched_group_indices.add(email_date_to_group[e_key])
 
         if not matched_group_indices:
             new_idx = len(groups)
             groups.append([ad])
-            if p10:
-                phone_to_group[p10] = new_idx
-            if em:
-                email_to_group[em] = new_idx
+            if p_key:
+                phone_date_to_group[p_key] = new_idx
+            if e_key:
+                email_date_to_group[e_key] = new_idx
         elif len(matched_group_indices) == 1:
             target_idx = list(matched_group_indices)[0]
             groups[target_idx].append(ad)
-            if p10:
-                phone_to_group[p10] = target_idx
-            if em:
-                email_to_group[em] = target_idx
+            if p_key:
+                phone_date_to_group[p_key] = target_idx
+            if e_key:
+                email_date_to_group[e_key] = target_idx
         else:
             target_idx = min(matched_group_indices)
             merged = []
@@ -372,12 +376,13 @@ def run_layer2_contact_collapse(qualified_ads: list[dict]) -> tuple[list[dict], 
             merged.append(ad)
             groups[target_idx] = merged
             for a in merged:
+                a_dt = a["edition_date"]
                 p_sub = get_phone_last10(a["contact_phone"])
                 em_sub = get_email_lower(a["contact_email"])
                 if p_sub:
-                    phone_to_group[p_sub] = target_idx
+                    phone_date_to_group[(p_sub, a_dt)] = target_idx
                 if em_sub:
-                    email_to_group[em_sub] = target_idx
+                    email_date_to_group[(em_sub, a_dt)] = target_idx
 
     active_groups = [g for g in groups if g]
 
@@ -492,6 +497,23 @@ def run_layer3_cross_run_dedup(collapsed_leads: list[dict], existing_leads: list
             row_payload = build_save_leads_bulk_row(
                 lead, target_key, role_titles, batch_date, score, tier, times_seen, last_seen_date
             )
+            new_entry = {
+                "company_key": target_key,
+                "company_name": lead.get("company_name"),
+                "contact_phone": lead.get("contact_phone"),
+                "contact_email": lead.get("contact_email"),
+                "role_titles": list(role_titles),
+                "score": score,
+                "tier": tier,
+                "times_seen": times_seen,
+                "last_seen_date": last_seen_date,
+            }
+            if p10:
+                phone_map[p10] = new_entry
+            if em:
+                email_map[em] = new_entry
+            key_map[target_key] = new_entry
+
             final_payload_rows.append({
                 "payload": row_payload,
                 "layer3_outcome": "new",
@@ -507,7 +529,7 @@ def run_layer3_cross_run_dedup(collapsed_leads: list[dict], existing_leads: list
 
             existing_last_seen = matched_lead.get("last_seen_date")
             existing_times_seen = matched_lead.get("times_seen") or 1
-            existing_score = matched_lead.get("score") or lead["score"]
+            existing_score = matched_lead.get("score") if matched_lead.get("score") is not None else lead["score"]
             existing_tier = matched_lead.get("tier") or lead["tier"]
             existing_roles = matched_lead.get("role_titles") or []
 
@@ -537,6 +559,12 @@ def run_layer3_cross_run_dedup(collapsed_leads: list[dict], existing_leads: list
                 score = min(100, existing_score + 15)
                 tier = "hot"
                 outcome = "readvertisement"
+
+            matched_lead["times_seen"] = times_seen
+            matched_lead["last_seen_date"] = last_seen_date
+            matched_lead["score"] = score
+            matched_lead["tier"] = tier
+            matched_lead["role_titles"] = combined_roles
 
             row_payload = build_save_leads_bulk_row(
                 lead, target_key, combined_roles, last_seen_date, score, tier, times_seen, last_seen_date
@@ -727,7 +755,10 @@ def execute_pipeline(db_path: str, write: bool = False):
     for k in sorted(set(layer3_stats["touched_keys"])):
         print(f"   - {k}")
 
-    raw_payloads = [item["payload"] for item in final_payload_rows]
+    unique_payloads_by_key = {}
+    for item in final_payload_rows:
+        unique_payloads_by_key[item["payload"]["company_key"]] = item["payload"]
+    raw_payloads = list(unique_payloads_by_key.values())
     print(f"\n5. Exact JSON for save_leads_bulk (First 3 rows in full):")
     print(json.dumps(raw_payloads[:3], indent=2))
 
