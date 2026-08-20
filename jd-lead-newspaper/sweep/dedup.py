@@ -185,6 +185,7 @@ def run_layer1_and_extract(db_path: str, existing_ad_keys: set[str]) -> tuple[li
             max_e = max(a[1] for a in cl)
 
             prev_e = clusters[i-1][-1][1] if i > 0 else 0
+            next_s = clusters[i+1][0][0] if i < len(clusters)-1 else len(text)
             phones = [a[3] for a in cl if a[2] == "phone"]
             emails = [a[3] for a in cl if a[2] == "email"]
 
