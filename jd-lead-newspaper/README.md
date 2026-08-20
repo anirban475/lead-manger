@@ -185,6 +185,18 @@ being withheld.
 **Warm only, no hot tier, no recurrence mechanism.** There is no `applyCount`
 equivalent in a newspaper ad. Leads go straight to contact rather than ripening.
 
+**Apollo enrichment is a scheduled stage, and it runs after dedup.** It was held
+out of `run_radar.sh` at first on a projected ~9 credits per lead, near 650 for
+a full run. Measured cost is 1 credit per match, because `people_search` is free
+and only `reveal_emails` bills. That corrected figure is why wiring it in was
+safe. Ordering is not cosmetic: enrichment runs after `dedup.py --write` so a
+credit is never spent on a lead that was about to be dropped.
+
+**`dedup.py` keeps its own copy of the segmentation cluster loop.** Two copies
+that must agree, in the path that decides whether leads duplicate. A missing
+`next_s` in one copy took the dedup stage down once already. Change segmentation
+in `extract.py` and you must change `dedup.py` in the same commit.
+
 ## n8n hazards
 
 **`update_workflow` strips credentials.** The lead-scraper MCP workflow serves
