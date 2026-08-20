@@ -95,6 +95,83 @@ LOCALITY_BLOCKLIST = {
     'ashok vihar', 'pearl business park', 'marol naka', 'marol', 'beadonpura'
 }
 
+KNOWN_LOCATIONS = [
+    # Multi-word names first
+    'Navi Mumbai', 'Greater Noida', 'New Delhi', 'South Delhi', 'North Delhi', 'West Delhi', 'East Delhi', 'Central Delhi',
+    'South Extn', 'South Ex', 'Connaught Place', 'Connaught Circus', 'Nehru Place', 'Netaji Subhash Place', 'Laxmi Nagar',
+    'Lajpat Nagar', 'Patel Nagar', 'Rajouri Garden', 'Chandni Chowk', 'Dilshad Garden', 'Mayur Vihar', 'Paschim Vihar',
+    'Ashok Vihar', 'Shalimar Bagh', 'Uttam Nagar', 'Karol Bagh', 'Nizamuddin East', 'Nizamuddin', 'Pearl Business Park',
+    'Marol Naka', 'Nariman Point', 'Lower Parel', 'Marine Lines', 'Grant Road', 'Charni Road', 'Mumbai Central',
+    'Mira Road', 'CBD Belapur', 'Kopar Khairane', 'Andheri East', 'Andheri West', 'Vile Parle',
+    'Chhatrapati Sambhajinagar', 'Sri Ganganagar',
+    # Single word NCR / Localities
+    'Noida', 'Gurgaon', 'Gurugram', 'Ghaziabad', 'Faridabad', 'Bahadurgarh', 'Kundli', 'Manesar', 'Dharuhera',
+    'Bawal', 'Neemrana', 'Bhiwadi', 'Sonipat', 'Panipat', 'Karnal', 'Rohtak', 'Hisar', 'Ambala', 'Rewari', 'Yamunanagar',
+    'Dwarka', 'Rohini', 'Saket', 'Pitampura', 'Janakpuri', 'Okhla', 'Kalkaji', 'Tughlakabad', 'Jasola', 'Shahdara',
+    'Karkardooma', 'Vikaspuri', 'Delhi',
+    # Single word Mumbai MMR
+    'Mumbai', 'Thane', 'Kalyan', 'Dombivli', 'Bhiwandi', 'Vasai', 'Virar', 'Bhayandar', 'Panvel', 'Kharghar', 'Vashi',
+    'Belapur', 'Nerul', 'Airoli', 'Mahape', 'Rabale', 'Taloja', 'Ambernath', 'Badlapur', 'Digha', 'Ghansoli', 'Juinagar',
+    'Sanpada', 'Seawoods', 'Mansarovar', 'Khandeshwar', 'Uran',
+    'Andheri', 'Bandra', 'Borivali', 'Dadar', 'Worli', 'Chembur', 'Kurla', 'Goregaon', 'Malad', 'Kandivali', 'Dahisar',
+    'Santacruz', 'Ghatkopar', 'Mulund', 'Bhandup', 'Powai', 'Vikhroli', 'Kanjurmarg', 'Parel', 'Prabhadevi', 'Mahalaxmi',
+    'Colaba', 'Fort', 'Byculla', 'Wadala', 'Sion', 'Churchgate', 'Mazgaon', 'Marol',
+    # Maharashtra
+    'Pune', 'Pimpri', 'Chinchwad', 'Hinjewadi', 'Hadapsar', 'Chakan', 'Talegaon', 'Bhosari', 'Sanaswadi', 'Nagpur',
+    'Nashik', 'Aurangabad', 'Solapur', 'Kolhapur', 'Amravati', 'Nanded', 'Jalgaon', 'Akola', 'Latur', 'Dhule',
+    'Ahmednagar', 'Satara', 'Sangli', 'Ratnagiri',
+    # Gujarat
+    'Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Gandhinagar', 'Ankleshwar', 'Vapi', 'Bharuch', 'Halol', 'Bhavnagar',
+    'Jamnagar', 'Junagadh', 'Morbi', 'Mehsana', 'Valsad', 'Navsari',
+    # Rajasthan
+    'Jaipur', 'Jodhpur', 'Udaipur', 'Kota', 'Ajmer', 'Bhilwara', 'Alwar', 'Bikaner', 'Sikar', 'Pali', 'Bharatpur',
+    # Punjab & Haryana
+    'Chandigarh', 'Mohali', 'Panchkula', 'Ludhiana', 'Amritsar', 'Jalandhar', 'Patiala', 'Bathinda', 'Hoshiarpur',
+    # North / Hills
+    'Shimla', 'Solan', 'Baddi', 'Dharamsala', 'Dehradun', 'Haridwar', 'Rishikesh', 'Roorkee', 'Haldwani', 'Rudrapur',
+    'Jammu', 'Srinagar',
+    # UP
+    'Lucknow', 'Kanpur', 'Agra', 'Varanasi', 'Prayagraj', 'Allahabad', 'Meerut', 'Aligarh', 'Bareilly', 'Moradabad',
+    'Saharanpur', 'Gorakhpur', 'Jhansi', 'Mathura', 'Muzaffarnagar', 'Ayodhya',
+    # MP
+    'Indore', 'Bhopal', 'Gwalior', 'Jabalpur', 'Ujjain',
+    # South
+    'Bangalore', 'Bengaluru', 'Hyderabad', 'Secunderabad', 'Chennai', 'Coimbatore', 'Madurai', 'Trichy', 'Salem',
+    'Kochi', 'Cochin', 'Trivandrum', 'Thiruvananthapuram', 'Kozhikode', 'Calicut', 'Thrissur', 'Visakhapatnam',
+    'Vizag', 'Vijayawada', 'Guntur', 'Tirupati', 'Mysore', 'Mysuru', 'Mangalore', 'Mangaluru', 'Hubli', 'Belgaum',
+    # East
+    'Kolkata', 'Howrah', 'Patna', 'Ranchi', 'Jamshedpur', 'Dhanbad', 'Bokaro', 'Bhubaneswar', 'Cuttack', 'Rourkela',
+    'Raipur', 'Bhilai', 'Bilaspur', 'Guwahati', 'Shillong'
+]
+
+CANONICAL_LOCATION_MAP = {
+    'gurugram': 'Gurgaon',
+    'bengaluru': 'Bangalore',
+    'prayagraj': 'Allahabad',
+    'cochin': 'Kochi',
+    'trivandrum': 'Thiruvananthapuram',
+    'calicut': 'Kozhikode',
+    'vizag': 'Visakhapatnam',
+    'mysuru': 'Mysore',
+    'mangaluru': 'Mangalore',
+    'belagavi': 'Belgaum',
+    'chhatrapati sambhajinagar': 'Aurangabad',
+    'south extn': 'South Ex',
+}
+
+KNOWN_LOCATIONS_SORTED = sorted(KNOWN_LOCATIONS, key=len, reverse=True)
+LOCATION_PATTERNS = [(re.compile(r'\b' + re.escape(loc) + r'\b', re.IGNORECASE), loc) for loc in KNOWN_LOCATIONS_SORTED]
+
+
+def extract_location(text: str) -> str | None:
+    """Extract recognized Indian city/locality from ad text."""
+    for pat, canonical in LOCATION_PATTERNS:
+        if pat.search(text):
+            low = canonical.lower()
+            return CANONICAL_LOCATION_MAP.get(low, canonical)
+    return None
+
+
 ROLE_BLOCKLIST = {
     'engineer', 'diploma', 'accountant', 'account', 'accounts', 'senior accountant',
     'junior accountant', 'manager', 'executive', 'sales', 'marketing', 'telecaller',

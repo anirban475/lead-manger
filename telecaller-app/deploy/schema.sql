@@ -33,6 +33,8 @@ ALTER TABLE leads ADD COLUMN IF NOT EXISTS call_count       int NOT NULL DEFAULT
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS origin           text DEFAULT 'scrape';
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS brand            text;  -- amatec|jobdrive; backfilled existing to 'jobdrive' 2026-07-15; SET NOT NULL after save_leads stamps brand
 ALTER TABLE leads ALTER COLUMN brand SET NOT NULL;  -- enforced 2026-07-15 after all writers (save_leads, createLead, bulkCreateLeads) stamp brand
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS job_description  text;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS edition_city     text;
 
 -- 3. Per-query conversion signal (the feedback view the scraper reads)
 CREATE OR REPLACE VIEW query_conversion AS

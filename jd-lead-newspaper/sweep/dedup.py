@@ -34,6 +34,7 @@ from extract import (
     classify_candidate,
     extract_clean_ad_text,
     extract_roles,
+    extract_location,
     resolve_company_name,
     normalize_company_key,
     score_lead,
@@ -108,6 +109,8 @@ def query_existing_leads() -> list[dict]:
             'last_seen_date', last_seen_date,
             'posted_date', posted_date,
             'city', city,
+            'edition_city', edition_city,
+            'job_description', job_description,
             'industry', industry,
             'size', size,
             'job_urls', job_urls,
@@ -305,11 +308,17 @@ def run_layer1_and_extract(db_path: str, existing_ad_keys: set[str]) -> tuple[li
                 contact_seed = get_phone_last10(phone) or get_email_lower(email)
                 comp_key = f"npc_{hashlib.sha1(contact_seed.encode('utf-8')).hexdigest()[:16]}"
 
+            extracted_loc = extract_location(ad_text)
+            city = extracted_loc if extracted_loc else page_city
+            edition_city = page_city
+
             qualified_ads.append({
                 "ad_key": ad_key,
                 "edition_key": ed_key,
                 "paper": paper,
-                "city": page_city,
+                "city": city,
+                "edition_city": edition_city,
+                "extracted_city": extracted_loc,
                 "edition_date": ed_date,
                 "weekday": wd,
                 "page_no": pno,
@@ -420,10 +429,28 @@ def run_layer2_contact_collapse(qualified_ads: list[dict]) -> tuple[list[dict], 
         latest_date = max(ad["edition_date"] for ad in g)
         tier = "hot" if max_score >= 70 else "warm"
 
+        # Aggregate unique job description texts
+        seen_texts = set()
+        ad_texts = []
+        for ad in g:
+            t = (ad.get("raw_ad_text") or "").strip()
+            if t and t not in seen_texts:
+                seen_texts.add(t)
+                ad_texts.append(t)
+        job_description = "\n\n".join(ad_texts)
+
+        # Location extraction
+        extracted_city = next((ad.get("extracted_city") for ad in g if ad.get("extracted_city")), None)
+        edition_city = next((ad.get("edition_city") for ad in g if ad.get("edition_city")), primary.get("city"))
+        city = extracted_city if extracted_city else edition_city
+
         collapsed_lead = dict(primary)
         collapsed_lead["role_titles"] = combined_roles
         collapsed_lead["score"] = max_score
         collapsed_lead["tier"] = tier
+        collapsed_lead["city"] = city
+        collapsed_lead["edition_city"] = edition_city
+        collapsed_lead["job_description"] = job_description
         collapsed_lead["edition_date"] = latest_date
         collapsed_lead["all_ad_keys"] = [ad["ad_key"] for ad in g]
         collapsed_lead["all_instances"] = g
@@ -493,9 +520,13 @@ def run_layer3_cross_run_dedup(collapsed_leads: list[dict], existing_leads: list
             tier = lead["tier"]
             role_titles = lead["role_titles"]
             target_key = lead["company_key"]
+            job_description = lead.get("job_description") or ""
+            city = lead.get("city") or ""
+            edition_city = lead.get("edition_city") or ""
 
             row_payload = build_save_leads_bulk_row(
-                lead, target_key, role_titles, batch_date, score, tier, times_seen, last_seen_date
+                lead, target_key, role_titles, batch_date, score, tier, times_seen, last_seen_date,
+                job_description=job_description, edition_city=edition_city, city=city
             )
             new_entry = {
                 "company_key": target_key,
@@ -507,6 +538,9 @@ def run_layer3_cross_run_dedup(collapsed_leads: list[dict], existing_leads: list
                 "tier": tier,
                 "times_seen": times_seen,
                 "last_seen_date": last_seen_date,
+                "job_description": job_description,
+                "city": city,
+                "edition_city": edition_city
             }
             if p10:
                 phone_map[p10] = new_entry
@@ -534,6 +568,34 @@ def run_layer3_cross_run_dedup(collapsed_leads: list[dict], existing_leads: list
             existing_roles = matched_lead.get("role_titles") or []
 
             combined_roles = union_roles(existing_roles, lead["role_titles"])
+
+            # Combine job descriptions
+            existing_jd = matched_lead.get("job_description") or ""
+            new_jd = lead.get("job_description") or ""
+            jd_parts = []
+            seen_jd = set()
+            for jd_str in [existing_jd, new_jd]:
+                if jd_str:
+                    for chunk in jd_str.split("\n\n"):
+                        clean_chunk = chunk.strip()
+                        if clean_chunk and clean_chunk not in seen_jd:
+                            seen_jd.add(clean_chunk)
+                            jd_parts.append(clean_chunk)
+            combined_jd = "\n\n".join(jd_parts)
+
+            # Location handling
+            lead_city = lead.get("city")
+            lead_ed_city = lead.get("edition_city")
+            existing_city = matched_lead.get("city")
+            existing_ed_city = matched_lead.get("edition_city") or lead_ed_city
+
+            final_ed_city = existing_ed_city or lead_ed_city
+            if lead.get("extracted_city"):
+                final_city = lead.get("extracted_city")
+            elif existing_city and existing_city.lower() != (existing_ed_city or "").lower():
+                final_city = existing_city
+            else:
+                final_city = lead_city or existing_city or final_ed_city
 
             if not existing_last_seen:
                 # NULL last_seen_date: treat as unknown, set date, no bonus
@@ -565,9 +627,13 @@ def run_layer3_cross_run_dedup(collapsed_leads: list[dict], existing_leads: list
             matched_lead["score"] = score
             matched_lead["tier"] = tier
             matched_lead["role_titles"] = combined_roles
+            matched_lead["job_description"] = combined_jd
+            matched_lead["city"] = final_city
+            matched_lead["edition_city"] = final_ed_city
 
             row_payload = build_save_leads_bulk_row(
-                lead, target_key, combined_roles, last_seen_date, score, tier, times_seen, last_seen_date
+                lead, target_key, combined_roles, last_seen_date, score, tier, times_seen, last_seen_date,
+                job_description=combined_jd, edition_city=final_ed_city, city=final_city
             )
             if matched_lead.get("company_name"):
                 row_payload["company_name"] = matched_lead["company_name"]
@@ -584,14 +650,20 @@ def run_layer3_cross_run_dedup(collapsed_leads: list[dict], existing_leads: list
     return final_payload_rows, stats
 
 
-def build_save_leads_bulk_row(lead: dict, company_key: str, role_titles: list[str], posted_date: str, score: int, tier: str, times_seen: int = 1, last_seen_date: str | None = None) -> dict:
+def build_save_leads_bulk_row(
+    lead: dict, company_key: str, role_titles: list[str], posted_date: str,
+    score: int, tier: str, times_seen: int = 1, last_seen_date: str | None = None,
+    job_description: str = "", edition_city: str = "", city: str = ""
+) -> dict:
     """Builds a single object matching the exact fields for save_leads_bulk and leads table."""
     return {
         "company_key": company_key,
         "company_name": lead.get("company_name") or "",
         "industry": lead.get("industry") or "",
         "size": lead.get("size") or "",
-        "city": lead.get("city") or "",
+        "city": city or lead.get("city") or "",
+        "edition_city": edition_city or lead.get("edition_city") or "",
+        "job_description": job_description or lead.get("job_description") or "",
         "roles_count": str(len(role_titles)),
         "role_titles": "|".join(role_titles),
         "posted_date": str(posted_date),
@@ -629,7 +701,7 @@ INSERT INTO leads (
     posted_date, job_urls, contact_phone, contact_email, contact_source,
     company_website, score, tier, source_query, apply_count, role_group,
     industry_label, contact_name, contact_title, contact_linkedin, brand,
-    times_seen, last_seen_date
+    times_seen, last_seen_date, job_description, edition_city
 )
 SELECT DISTINCT ON (r.company_key)
     r.company_key, r.company_name, r.industry, r.size, r.city,
@@ -642,17 +714,22 @@ SELECT DISTINCT ON (r.company_key)
     NULLIF(r.apply_count,'')::int,
     r.role_group, r.industry_label, r.contact_name, r.contact_title, r.contact_linkedin, r.brand,
     NULLIF(r.times_seen,'')::int,
-    NULLIF(r.last_seen_date,'')::date
+    NULLIF(r.last_seen_date,'')::date,
+    NULLIF(r.job_description, ''),
+    NULLIF(r.edition_city, '')
 FROM jsonb_to_recordset($${json_data}$$::jsonb) AS r(
     company_key text, company_name text, industry text, size text, city text,
     roles_count text, role_titles text, posted_date text, job_urls text,
     contact_phone text, contact_email text, contact_source text, company_website text,
     score text, tier text, source_query text, apply_count text, role_group text,
     industry_label text, contact_name text, contact_title text, contact_linkedin text, brand text,
-    times_seen text, last_seen_date text
+    times_seen text, last_seen_date text, job_description text, edition_city text
 )
 ORDER BY r.company_key
 ON CONFLICT (company_key) DO UPDATE SET
+    city = COALESCE(NULLIF(EXCLUDED.city, ''), leads.city),
+    edition_city = COALESCE(leads.edition_city, EXCLUDED.edition_city),
+    job_description = COALESCE(EXCLUDED.job_description, leads.job_description),
     roles_count = EXCLUDED.roles_count,
     role_titles = EXCLUDED.role_titles,
     posted_date = EXCLUDED.posted_date,
