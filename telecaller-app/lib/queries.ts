@@ -29,6 +29,7 @@ export type Lead = {
   last_called_at: string | null;
   call_count: number;
   origin: string;
+  job_description: string | null;
 };
 
 // Dates cast to text so node-postgres returns 'YYYY-MM-DD' strings (no TZ drift).
@@ -38,7 +39,8 @@ const LEAD_COLS = `
   contact_source, company_website, score, tier, status, next_action,
   next_action_date::text AS next_action_date, source_query,
   apply_count, role_group, industry_label, contact_name, contact_title,
-  last_disposition, last_called_at::text AS last_called_at, call_count, origin`;
+  last_disposition, last_called_at::text AS last_called_at, call_count, origin,
+  job_description`;
 
 const CLOSED = `('won','lost','opted_out')`;
 

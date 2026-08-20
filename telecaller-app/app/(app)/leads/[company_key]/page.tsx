@@ -120,6 +120,15 @@ export default async function LeadPage({ params }: { params: Promise<{ company_k
               ) : null}
             </div>
 
+            {lead.job_description && lead.job_description.trim() ? (
+              <div className="card pad">
+                <div className="section-title">Job Description</div>
+                <div style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontSize: '13px', lineHeight: 1.5, color: 'var(--text-body)' }}>
+                  {lead.job_description.trim()}
+                </div>
+              </div>
+            ) : null}
+
             <div className="card pad">
               <div className="section-title">Comments</div>
               <CommentForm companyKey={lead.company_key} />

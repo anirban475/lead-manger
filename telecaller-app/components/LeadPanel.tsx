@@ -26,6 +26,7 @@ export default function LeadPanel({ lead, onClose, onLeadUpdated }: LeadPanelPro
   const [isEditingContact, setIsEditingContact] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [editPending, startEditTransition] = useTransition();
+  const [showFullDesc, setShowFullDesc] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
   // Close on Escape key press
@@ -45,11 +46,13 @@ export default function LeadPanel({ lead, onClose, onLeadUpdated }: LeadPanelPro
       setCommentText('');
       setIsEditingContact(false);
       setEditError(null);
+      setShowFullDesc(false);
       return;
     }
 
     setIsEditingContact(false);
     setEditError(null);
+    setShowFullDesc(false);
     setLoadingActivity(true);
     getLeadActivityAction(lead.company_key)
       .then((data) => {
@@ -228,6 +231,28 @@ export default function LeadPanel({ lead, onClose, onLeadUpdated }: LeadPanelPro
               </>
             )}
           </div>
+
+          {/* Job Description */}
+          {lead.job_description && lead.job_description.trim() ? (
+            <div className="drawer-section card pad" style={{ border: '1px solid var(--border-default)' }}>
+              <h3 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '8px' }}>Job Description</h3>
+              <div style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontSize: '13px', lineHeight: 1.5, color: 'var(--text-body)' }}>
+                {lead.job_description.trim().length > 400 && !showFullDesc
+                  ? `${lead.job_description.trim().slice(0, 400)}…`
+                  : lead.job_description.trim()}
+              </div>
+              {lead.job_description.trim().length > 400 && (
+                <button
+                  type="button"
+                  onClick={() => setShowFullDesc(!showFullDesc)}
+                  className="btn ghost"
+                  style={{ marginTop: '8px', padding: '4px 8px', fontSize: '12px', cursor: 'pointer' }}
+                >
+                  {showFullDesc ? 'Show less' : 'Show more'}
+                </button>
+              )}
+            </div>
+          ) : null}
 
           {/* Section 2: Log call outcome */}
           <div className="drawer-section card pad" style={{ border: '1px solid var(--border-default)' }}>
