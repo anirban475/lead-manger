@@ -133,3 +133,69 @@ exactly 1 page while the same cities returned 18 to 34 pages on three other
 dates. A single-page edition is an archive gap, not a thin paper. The runner
 should flag any edition returning fewer than about 5 pages as suspect rather
 than recording it as a genuine empty result.
+
+## English dailies outside indupaper (surveyed 2026-08-20)
+
+The question was whether to add regional English dailies that indupaper does not
+carry. The useful finding is that they are not scattered across dozens of bespoke
+sites. They cluster on a small number of e-paper platforms, exactly as the TOI,
+HT and Mirror editions cluster on indupaper's CloudFront. Hunt platforms, not
+papers.
+
+**Readwhere (Mediology Software).** Carries The Tribune and its Chandigarh,
+Ludhiana, Amritsar, Jalandhar, Bathinda, Haryana, Himachal and Delhi editions,
+The Statesman (Delhi, Mumbai, Lucknow), Free Press Journal (Mumbai, Bhopal,
+Indore), Indian Express (Vadodara, Nagpur, Patna), Financial Express, The Hans
+India, Greater Kashmir, and The New Indian Express Group. Roughly 180 English
+titles across 10 index pages. Whitelabel deployments serve from
+`mcmscache.epapr.in` and `cache.epapr.in`.
+
+**Readwhere is paywalled, and that is the blocker.** The Tribune sells epaper
+access at Rs 749 a year, Rs 999 bundled. An edition page offers "Read Now" behind
+a purchase and asks "Already purchased this edition?". This is not the indupaper
+situation, where full page images are served free and unauthenticated. Treat
+Readwhere as a paid data source to be bought, not a target to be scraped. At Rs
+749 a title the economics are trivial if the leads justify it.
+
+**Hocalwire.** The Assam Tribune, the highest-circulation English daily in the
+northeast, at `epaper.assamtribune.com`. It exposes whole editions as PDF at
+`/full-page-pdf/epaper/pdf/YYYY/MM/DD/the-assam-tribune/<id>` with sequential
+edition ids, and PDFs OCR better than page images. It also carries an explicit
+notice threatening prosecution under the Copyright Act for reproduction, and
+gates downloads behind a subscription. Same conclusion as Readwhere: buy it or
+leave it.
+
+**Deccan Herald** at `epaper.deccanherald.com` is client-rendered and returns an
+empty shell to a plain fetch. Assessing it needs a JS-capable browser, so its
+access terms are still unknown.
+
+**The Hindu and The New Indian Express** are listed in
+`indupaper-contracts.json` as broken. They are not broken, they are unbuilt.
+Both pages have their form and script tags commented out and are marked coming
+soon on indupaper's side. Nothing to fix from here. Recheck occasionally, since
+these are two of the largest English classified carriers in the south.
+
+**Decision 2026-08-20: exhaust the free indupaper English capacity first.** It
+was measured at 33 editions and 526 pages against 7 editions live, so roughly a
+fourfold gain with no new integration, no credentials and no terms question. The
+paid platforms are a separate commercial decision and should be revisited only
+once yield data from the wider indupaper scope shows what is still missing.
+
+### Measured throughput at 33 editions (2026-08-20)
+
+The COVERAGE-MATRIX estimate of ~13s a page, giving ~64 min a week for the widest
+scope, is optimistic. A live 33-edition run measured *5.4 pages a minute* across
+4 workers, so 526 pages is roughly *95 minutes per run day*, near 3 hours a week
+over the Sunday and Wednesday schedule.
+
+The gap is pass 2. Roughly 20% of pages cross the keyword threshold and get
+re-OCRed at full resolution, and those are the 50 to 90 second pages. Pass-2 load
+scales with recruitment-dense pages, which is exactly what grows when editions
+are added, so cost grows faster than page count.
+
+Still fine for a twice-weekly cron, with two consequences. The `flock` guard in
+`run_radar.sh` is now load-bearing rather than theoretical, because a 95 minute
+run has real overlap risk against a daily schedule. And if throughput has to
+improve, raise `OCR_WORKERS` or the keyword threshold before dropping editions,
+since the coverage decision above says edition breadth is what protects against
+week-to-week syndication swings.
