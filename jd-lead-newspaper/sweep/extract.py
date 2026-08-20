@@ -448,46 +448,73 @@ def classify_candidate(text: str) -> tuple[str, int, int, int]:
 
 
 TRIGGER_RE = re.compile(
-    r'\b(?:REQUIRE|REQUIRES|REQUIRED|WANTED|REQ\.?|REQD|VACANCY|VACANCIES|SITUATION\s+VACANT|SITUATIONS\s+VACANT|HIRING|JOB\s+VACANCY|WALK-IN|WALKIN|APPOINTMENT|APPOINTMENTS|APPLICATIONS\s+INVITED|URGENTLY\s+REQUIRED|CAREER\s+OPPORTUNITY)\b',
+    r'(?:^|\n)\s*(?:REQUIRE|REQUIRES|REQUIRED|WANTED|REQ\.?|REQD|VACANCY|VACANCIES|SITUATION\s+VACANT|SITUATIONS\s+VACANT|HIRING|JOB\s+VACANCY|WALK-IN|WALKIN|APPOINTMENT|APPOINTMENTS|APPLICATIONS\s+INVITED|URGENTLY\s+REQUIRED|CAREER\s+OPPORTUNITY)\b',
     re.IGNORECASE
 )
 
 CATEGORY_HEADER_RE = re.compile(
-    r'(?:\n\s*[-=_]{3,}|\b(?:OTHER\s+VACANCIES|MULTIPLE\s+VACANCIES|GENERAL\s+MULTIPLE\s+VACANCIES|CLASSIFIEDS?|APPOINTMENTS?|SITUATIONS?\s+VACANT|MEDICAL|ACCOUNTS?|SALES|MARKETING|TEACHERS?|PROFESSIONALS?|SECURITY|DOMESTIC|HOTEL|PLACEMENT|ENGINEERING)\b)',
+    r'(?:^|\n)\s*(?:[-=_]{3,}|\b(?:OTHER\s+VACANCIES|MULTIPLE\s+VACANCIES|GENERAL\s+MULTIPLE\s+VACANCIES|CLASSIFIEDS?|APPOINTMENTS?|SITUATIONS?\s+VACANT|MEDICAL|ACCOUNTS?|SALES|MARKETING|TEACHERS?|PROFESSIONALS?|SECURITY|DOMESTIC|HOTEL|PLACEMENT|ENGINEERING)\b)',
     re.IGNORECASE
 )
 
 
-def extract_clean_ad_text(text: str, anchor_s: int, anchor_e: int, prev_anchor_e: int = 0, next_anchor_s: int | None = None, window: int = 800) -> str:
-    between_text = text[prev_anchor_e:anchor_s]
-    sec_matches = list(CATEGORY_HEADER_RE.finditer(between_text))
-    trig_matches = list(TRIGGER_RE.finditer(between_text))
+def extract_clean_ad_text(text: str, anchor_s: int, anchor_e: int, prev_anchor_e: int = 0, next_anchor_s: int | None = None, window: int = 1200) -> str:
+    raw_left = max(0, anchor_s - window)
+    window_snippet = text[raw_left:anchor_s]
+
+    preceding_contacts = []
+    for m in PHONE_RE.finditer(window_snippet):
+        preceding_contacts.append((raw_left + m.start(), raw_left + m.end(), 'phone', m.group(0)))
+    for m in EMAIL_RE.finditer(window_snippet):
+        if 'timesofindia' not in m.group(0).lower() and 'hindustantimes' not in m.group(0).lower():
+            preceding_contacts.append((raw_left + m.start(), raw_left + m.end(), 'email', m.group(0)))
+    preceding_contacts.sort()
+
+    had_prec_contact = False
+    effective_left = raw_left
+    if preceding_contacts:
+        latest_prec = preceding_contacts[-1]
+        between_prec_and_anchor = text[latest_prec[1]:anchor_s]
+        has_cat = bool(CATEGORY_HEADER_RE.search(between_prec_and_anchor))
+        if not has_cat:
+            effective_left = latest_prec[1]
+            had_prec_contact = True
+
+    effective_left = max(effective_left, min(prev_anchor_e, anchor_s))
+
+    snippet_before = text[effective_left:anchor_s]
+    sec_matches = list(CATEGORY_HEADER_RE.finditer(snippet_before))
 
     if sec_matches:
-        start_pos = prev_anchor_e + sec_matches[-1].end()
-    elif trig_matches and (anchor_s - (prev_anchor_e + trig_matches[-1].start())) >= 25:
-        start_pos = prev_anchor_e + trig_matches[-1].start()
-    elif prev_anchor_e > 0 and (anchor_s - prev_anchor_e) <= window:
-        start_pos = prev_anchor_e
+        start_pos = effective_left + sec_matches[-1].end()
+    elif had_prec_contact:
+        start_pos = effective_left
     else:
-        left_limit = max(0, anchor_s - window)
-        snippet = text[left_limit:anchor_s]
-        sec_splits = list(CATEGORY_HEADER_RE.finditer(snippet))
-        if sec_splits:
-            start_pos = left_limit + sec_splits[-1].end()
+        trig_matches = list(TRIGGER_RE.finditer(snippet_before))
+        if trig_matches:
+            valid = [m for m in trig_matches if (anchor_s - (effective_left + m.start())) >= 25]
+            start_pos = effective_left + valid[0].start() if valid else effective_left
         else:
-            trig_splits = list(TRIGGER_RE.finditer(snippet))
-            if trig_splits:
-                valid = [m for m in trig_splits if (anchor_s - (left_limit + m.start())) >= 25]
-                start_pos = left_limit + valid[-1].start() if valid else left_limit
-            else:
-                start_pos = left_limit
+            start_pos = effective_left
 
-    right_limit = min(len(text), next_anchor_s if next_anchor_s is not None else len(text), anchor_e + 150)
-    snippet_after = text[anchor_e:right_limit]
-    end_sec = list(CATEGORY_HEADER_RE.finditer(snippet_after))
-    end_trig = list(TRIGGER_RE.finditer(snippet_after))
-    end_pos = right_limit
+    raw_right = min(len(text), next_anchor_s if next_anchor_s is not None else len(text), anchor_e + 150)
+    snippet_after = text[anchor_e:raw_right]
+
+    following_contacts = []
+    for m in PHONE_RE.finditer(snippet_after):
+        following_contacts.append((anchor_e + m.start(), anchor_e + m.end(), 'phone'))
+    for m in EMAIL_RE.finditer(snippet_after):
+        if 'timesofindia' not in m.group(0).lower() and 'hindustantimes' not in m.group(0).lower():
+            following_contacts.append((anchor_e + m.start(), anchor_e + m.end(), 'email'))
+    following_contacts.sort()
+
+    effective_right = raw_right
+    if following_contacts:
+        effective_right = min(effective_right, following_contacts[0][0])
+
+    end_sec = list(CATEGORY_HEADER_RE.finditer(text[anchor_e:effective_right]))
+    end_trig = list(TRIGGER_RE.finditer(text[anchor_e:effective_right]))
+    end_pos = effective_right
     if end_sec:
         end_pos = min(end_pos, anchor_e + end_sec[0].start())
     if end_trig:
