@@ -21,6 +21,11 @@ type RowData = {
   contact_name: string;
   contact_title: string;
   city: string;
+  company_website: string;
+  industry: string;
+  job_description: string;
+  role_titles: string;
+  contact_source: string;
   // Local status flags
   status: 'valid' | 'error' | 'duplicate';
   errorReason?: string;
@@ -54,7 +59,7 @@ export default function CsvUploadModal({ onClose, onSuccess }: CsvUploadModalPro
   // Trigger Template Download
   const handleDownloadTemplate = () => {
     const headers = TARGET_FIELDS.map(f => `"${f.label}"`).join(',');
-    const sample = '\n"Acme Corp","+91 98765 43210","hr@acme.com","John Doe","HR Manager","Mumbai"';
+    const sample = '\n"Acme Corp","+91 98765 43210","hr@acme.com","John Doe","HR Manager","Mumbai","https://acme.com","Technology","Senior Fullstack Developer needed","Software Engineer, Full Stack Developer","LinkedIn"';
     const csvContent = headers + sample;
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -139,6 +144,11 @@ export default function CsvUploadModal({ onClose, onSuccess }: CsvUploadModalPro
       const contact_name = String(rawRow[fieldMap.contact_name] || '').trim();
       const contact_title = String(rawRow[fieldMap.contact_title] || '').trim();
       const city = String(rawRow[fieldMap.city] || '').trim();
+      const company_website = String(rawRow[fieldMap.company_website] || '').trim();
+      const industry = String(rawRow[fieldMap.industry] || '').trim();
+      const job_description = String(rawRow[fieldMap.job_description] || '').trim();
+      const role_titles = String(rawRow[fieldMap.role_titles] || '').trim();
+      const contact_source = String(rawRow[fieldMap.contact_source] || '').trim();
 
       const validation = validateRow({ company_name, contact_phone });
       
@@ -189,6 +199,11 @@ export default function CsvUploadModal({ onClose, onSuccess }: CsvUploadModalPro
         contact_name,
         contact_title,
         city,
+        company_website,
+        industry,
+        job_description,
+        role_titles,
+        contact_source,
         status,
         errorReason,
         skipped
@@ -274,7 +289,12 @@ export default function CsvUploadModal({ onClose, onSuccess }: CsvUploadModalPro
         contact_email: r.contact_email || null,
         contact_name: r.contact_name || null,
         contact_title: r.contact_title || null,
-        city: r.city || null
+        city: r.city || null,
+        company_website: r.company_website || null,
+        industry: r.industry || null,
+        job_description: r.job_description || null,
+        role_titles: r.role_titles || null,
+        contact_source: r.contact_source || null
       }));
 
     startTransition(async () => {
