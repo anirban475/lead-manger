@@ -30,6 +30,10 @@ HTTP_HEADERS = {
 }
 
 
+# Per-paper recruitment days. Measured as qualified leads per edition-day,
+# not keyword density: keyword-dense pages are often matrimonial. See
+# RECRUITMENT-DAY-MAP.md. HT peaks Tuesday and is a near-zero Wednesday,
+# the opposite of TOI and Mirror.
 EDITIONS = [
     {
         "key": "toi-ahmedabad",
@@ -38,6 +42,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/toi/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "ahmedabad"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "toi-bangalore",
@@ -46,6 +51,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/toi/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "bangalore"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "toi-bhopal",
@@ -54,6 +60,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/toi/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "bhopal"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "toi-chandigarh",
@@ -62,6 +69,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/toi/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "chandigarh"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "toi-chennai",
@@ -70,6 +78,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/toi/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "chennai"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "toi-delhi",
@@ -78,6 +87,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/toi/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "delhi"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "toi-goa",
@@ -86,6 +96,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/toi/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "goa"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "toi-hyderabad",
@@ -94,6 +105,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/toi/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "hyderabad"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "toi-jaipur",
@@ -102,6 +114,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/toi/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "jaipur"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "toi-kochi",
@@ -110,6 +123,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/toi/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "kochi"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "toi-kolkata",
@@ -118,6 +132,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/toi/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "kolkata"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "toi-lucknow",
@@ -126,6 +141,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/toi/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "lucknow"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "toi-mumbai",
@@ -134,6 +150,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/toi/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "mumbai"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "toi-pune",
@@ -142,6 +159,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/toi/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "pune"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "mirror-bangalore",
@@ -150,6 +168,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/mirror/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "bangalore"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "mirror-mumbai",
@@ -158,6 +177,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/mirror/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "mumbai"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "mirror-pune",
@@ -166,6 +186,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/mirror/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "pune"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "et-bangalore",
@@ -174,6 +195,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/economictimes/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "bangalore"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "et-delhi",
@@ -182,6 +204,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/economictimes/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "delhi"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "et-kolkata",
@@ -190,6 +213,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/economictimes/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "kolkata"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "et-mumbai",
@@ -198,6 +222,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/economictimes/v2/download",
         "date_style": "dmy",
         "params": {"citySlug": "mumbai"},
+        "days": ["Wednesday", "Sunday"],
     },
     {
         "key": "ht-chandigarh",
@@ -206,6 +231,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/hindustantimes/v2/download",
         "date_style": "iso",
         "params": {"citySlug": "chandigarh"},
+        "days": ["Tuesday", "Sunday"],
     },
     {
         "key": "ht-delhi",
@@ -214,6 +240,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/hindustantimes/v2/download",
         "date_style": "iso",
         "params": {"citySlug": "delhi"},
+        "days": ["Tuesday", "Sunday"],
     },
     {
         "key": "ht-gurgaon",
@@ -222,6 +249,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/hindustantimes/v2/download",
         "date_style": "iso",
         "params": {"citySlug": "gurgaon"},
+        "days": ["Tuesday", "Sunday"],
     },
     {
         "key": "ht-lucknow",
@@ -230,6 +258,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/hindustantimes/v2/download",
         "date_style": "iso",
         "params": {"citySlug": "lucknow"},
+        "days": ["Tuesday", "Sunday"],
     },
     {
         "key": "ht-mumbai",
@@ -238,6 +267,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/hindustantimes/v2/download",
         "date_style": "iso",
         "params": {"citySlug": "mumbai"},
+        "days": ["Tuesday", "Sunday"],
     },
     {
         "key": "ht-noida",
@@ -246,6 +276,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/hindustantimes/v2/download",
         "date_style": "iso",
         "params": {"citySlug": "noida"},
+        "days": ["Tuesday", "Sunday"],
     },
     {
         "key": "ht-patna",
@@ -254,6 +285,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/hindustantimes/v2/download",
         "date_style": "iso",
         "params": {"citySlug": "patna"},
+        "days": ["Tuesday", "Sunday"],
     },
     {
         "key": "ht-pune",
@@ -262,6 +294,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/hindustantimes/v2/download",
         "date_style": "iso",
         "params": {"citySlug": "pune"},
+        "days": ["Tuesday", "Sunday"],
     },
     {
         "key": "ht-ranchi",
@@ -270,6 +303,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/hindustantimes/v2/download",
         "date_style": "iso",
         "params": {"citySlug": "ranchi"},
+        "days": ["Tuesday", "Sunday"],
     },
     {
         "key": "ht-thane",
@@ -278,6 +312,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/hindustantimes/v2/download",
         "date_style": "iso",
         "params": {"citySlug": "thane"},
+        "days": ["Tuesday", "Sunday"],
     },
     {
         "key": "ht-varanasi",
@@ -286,6 +321,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/hindustantimes/v2/download",
         "date_style": "iso",
         "params": {"citySlug": "varanasi"},
+        "days": ["Tuesday", "Sunday"],
     },
     {
         "key": "excelsior-jammu",
@@ -294,6 +330,7 @@ EDITIONS = [
         "url": "https://d1h47qec6ptx2j.cloudfront.net/dailyexcelsior/v1/download",
         "date_style": "ddmmyyyy_slash",
         "params": {"editionid": "1"},
+        "days": ["Tuesday", "Wednesday", "Sunday"],
     },
 ]
 
@@ -831,6 +868,7 @@ def main():
     parser.add_argument("--workers", type=int, default=4, help="Concurrent page workers")
     parser.add_argument("--keyword-threshold", type=int, default=8, help="Keyword count threshold to trigger pass 2")
     parser.add_argument("--repass2", action="store_true", help="Re-run pass 2 only on existing rows with keyword_count >= threshold")
+    parser.add_argument("--ignore-day-map", action="store_true", help="Sweep every edition regardless of its per-paper recruitment days")
     parser.add_argument("--db", type=str, default="/root/newspaper_sweep/sweep.db", help="Path to SQLite database")
     args = parser.parse_args()
 
@@ -890,6 +928,17 @@ def main():
 
         for edition in selected_editions:
             edition_key = edition["key"]
+
+            # Per-paper recruitment-day gate. Skip an edition on a weekday it
+            # does not carry classifieds, rather than paying OCR to find out.
+            ed_days = edition.get("days")
+            if ed_days and weekday not in ed_days and not args.ignore_day_map:
+                print(
+                    f"Skip {edition_key} {date_str} ({weekday}): not a recruitment day for this paper",
+                    flush=True,
+                )
+                continue
+
             t_ed_start = time.perf_counter()
 
             # Manifest request
