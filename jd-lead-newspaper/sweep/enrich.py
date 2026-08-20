@@ -7,7 +7,7 @@ by querying Apollo via the n8n MCP Server endpoint.
 
 Hard Money Safeguards:
 1. Dry run by default: --write must be passed explicitly to spend credits.
-2. Hard cap per run: --max-credits defaults to 100 and stops when reached.
+2. Hard cap per run: --max-credits defaults to 0 (unlimited) and stops when reached if specified.
 3. Never re-enrich: skips leads with contact_source starting with 'apollo'.
 4. Actual spend tracking: logs every credit consumed.
 """
@@ -234,12 +234,13 @@ def update_lead_in_db(company_key: str, phone: Optional[str], source: str, conta
     subprocess.run(cmd, input=sql, capture_output=True, text=True, check=True)
 
 
-def run_enrichment(write: bool = False, max_credits: int = 100, mcp_url: str = "http://localhost:5678/mcp/amatec-radar"):
+def run_enrichment(write: bool = False, max_credits: int = 0, mcp_url: str = "http://localhost:5678/mcp/amatec-radar"):
     mode_str = "[MODE: WRITE] Real Apollo reveals enabled." if write else "[MODE: DRY-RUN] Zero credits will be spent."
+    cap_str = f"{max_credits} credits maximum" if max_credits > 0 else "no cap"
     print("==================================================")
     print("ACTION-011 PART C: APOLLO LEAD ENRICHMENT")
     print(mode_str)
-    print(f"Hard Cap: {max_credits} credits maximum")
+    print(f"Hard Cap: {cap_str}")
     print("==================================================")
 
     leads = query_target_leads()
@@ -256,7 +257,7 @@ def run_enrichment(write: bool = False, max_credits: int = 100, mcp_url: str = "
     results = []
 
     for i, lead in enumerate(leads, 1):
-        if credits_spent >= max_credits:
+        if max_credits > 0 and credits_spent >= max_credits:
             print(f"\n[HARD CAP REACHED] Stopped at {credits_spent}/{max_credits} credits.")
             break
 
@@ -385,7 +386,7 @@ def run_enrichment(write: bool = False, max_credits: int = 100, mcp_url: str = "
 def main():
     parser = argparse.ArgumentParser(description="ACTION-011 Part C Apollo Enrichment Runner")
     parser.add_argument("--write", action="store_true", default=False, help="Perform real Apollo reveal calls and write to database")
-    parser.add_argument("--max-credits", type=int, default=100, help="Maximum Apollo credits allowed to spend (default: 100)")
+    parser.add_argument("--max-credits", type=int, default=0, help="Maximum Apollo credits allowed to spend (default: 0 = unlimited)")
     parser.add_argument("--mcp-url", type=str, default="http://localhost:5678/mcp/amatec-radar", help="n8n MCP server endpoint")
     args = parser.parse_args()
 
