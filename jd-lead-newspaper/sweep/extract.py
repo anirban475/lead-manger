@@ -447,27 +447,51 @@ def classify_candidate(text: str) -> tuple[str, int, int, int]:
     return 'other', m_cnt, p_cnt, r_cnt
 
 
-def extract_clean_ad_text(text: str, anchor_s: int, anchor_e: int, prev_anchor_e: int = 0, next_anchor_s: int | None = None) -> str:
-    left_limit = max(0, prev_anchor_e, anchor_s - 450)
-    snippet_before = text[left_limit:anchor_s]
+TRIGGER_RE = re.compile(
+    r'\b(?:REQUIRE|REQUIRES|REQUIRED|WANTED|REQ\.?|REQD|VACANCY|VACANCIES|SITUATION\s+VACANT|SITUATIONS\s+VACANT|HIRING|JOB\s+VACANCY|WALK-IN|WALKIN|APPOINTMENT|APPOINTMENTS|APPLICATIONS\s+INVITED|URGENTLY\s+REQUIRED|CAREER\s+OPPORTUNITY)\b',
+    re.IGNORECASE
+)
 
-    split_matches = list(re.finditer(r'(?:\n\s*\n|\b(?:REQUIRED|WANTED|REQ\.?|VACANCY|VACANCIES|SITUATION\s+VACANT|HIRING|JOB\s+VACANCY)\b)', snippet_before, re.IGNORECASE))
-    if split_matches:
-        valid_splits = [m for m in split_matches if (anchor_s - (left_limit + m.start())) >= 30]
-        if valid_splits:
-            start_pos = left_limit + valid_splits[-1].start()
-        else:
-            start_pos = left_limit
+CATEGORY_HEADER_RE = re.compile(
+    r'(?:\n\s*[-=_]{3,}|\b(?:OTHER\s+VACANCIES|MULTIPLE\s+VACANCIES|GENERAL\s+MULTIPLE\s+VACANCIES|CLASSIFIEDS?|APPOINTMENTS?|SITUATIONS?\s+VACANT|MEDICAL|ACCOUNTS?|SALES|MARKETING|TEACHERS?|PROFESSIONALS?|SECURITY|DOMESTIC|HOTEL|PLACEMENT|ENGINEERING)\b)',
+    re.IGNORECASE
+)
+
+
+def extract_clean_ad_text(text: str, anchor_s: int, anchor_e: int, prev_anchor_e: int = 0, next_anchor_s: int | None = None, window: int = 800) -> str:
+    between_text = text[prev_anchor_e:anchor_s]
+    sec_matches = list(CATEGORY_HEADER_RE.finditer(between_text))
+    trig_matches = list(TRIGGER_RE.finditer(between_text))
+
+    if sec_matches:
+        start_pos = prev_anchor_e + sec_matches[-1].end()
+    elif trig_matches and (anchor_s - (prev_anchor_e + trig_matches[-1].start())) >= 25:
+        start_pos = prev_anchor_e + trig_matches[-1].start()
+    elif prev_anchor_e > 0 and (anchor_s - prev_anchor_e) <= window:
+        start_pos = prev_anchor_e
     else:
-        start_pos = left_limit
+        left_limit = max(0, anchor_s - window)
+        snippet = text[left_limit:anchor_s]
+        sec_splits = list(CATEGORY_HEADER_RE.finditer(snippet))
+        if sec_splits:
+            start_pos = left_limit + sec_splits[-1].end()
+        else:
+            trig_splits = list(TRIGGER_RE.finditer(snippet))
+            if trig_splits:
+                valid = [m for m in trig_splits if (anchor_s - (left_limit + m.start())) >= 25]
+                start_pos = left_limit + valid[-1].start() if valid else left_limit
+            else:
+                start_pos = left_limit
 
     right_limit = min(len(text), next_anchor_s if next_anchor_s is not None else len(text), anchor_e + 150)
     snippet_after = text[anchor_e:right_limit]
-    end_matches = list(re.finditer(r'(?:\n\s*\n|\b(?:REQUIRED|WANTED|REQ\.?|VACANCY|VACANCIES|SITUATION\s+VACANT|HIRING|JOB\s+VACANCY)\b)', snippet_after, re.IGNORECASE))
-    if end_matches:
-        end_pos = anchor_e + end_matches[0].start()
-    else:
-        end_pos = right_limit
+    end_sec = list(CATEGORY_HEADER_RE.finditer(snippet_after))
+    end_trig = list(TRIGGER_RE.finditer(snippet_after))
+    end_pos = right_limit
+    if end_sec:
+        end_pos = min(end_pos, anchor_e + end_sec[0].start())
+    if end_trig:
+        end_pos = min(end_pos, anchor_e + end_trig[0].start())
 
     return text[start_pos:end_pos].strip()
 
