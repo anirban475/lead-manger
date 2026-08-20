@@ -328,7 +328,7 @@ export default function CsvUploadModal({ onClose, onSuccess }: CsvUploadModalPro
           left: '50%',
           transform: 'translate(-50%, -50%)',
           width: '95%',
-          maxWidth: step === 'validate' ? '860px' : '620px',
+          maxWidth: step === 'validate' ? '1200px' : '620px',
           maxHeight: '90vh',
           overflowY: 'auto',
           zIndex: 120,
@@ -494,7 +494,13 @@ export default function CsvUploadModal({ onClose, onSuccess }: CsvUploadModalPro
                         <th>Phone Number(s)</th>
                         <th>Email</th>
                         <th>Contact Person</th>
+                        <th>Designation / Title</th>
                         <th>City</th>
+                        <th>Company Website</th>
+                        <th>Industry</th>
+                        <th>Job Description</th>
+                        <th>Role Titles</th>
+                        <th>Source</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -549,8 +555,16 @@ export default function CsvUploadModal({ onClose, onSuccess }: CsvUploadModalPro
                             )}
                           </td>
                           <td>{row.contact_email || '—'}</td>
-                          <td>{row.contact_name ? `${row.contact_name} ${row.contact_title ? `(${row.contact_title})` : ''}` : '—'}</td>
+                          <td>{row.contact_name || '—'}</td>
+                          <td>{row.contact_title || '—'}</td>
                           <td>{row.city || '—'}</td>
+                          <td>{row.company_website || '—'}</td>
+                          <td>{row.industry || '—'}</td>
+                          <td title={row.job_description || undefined}>
+                            {row.job_description ? row.job_description.slice(0, 60) + (row.job_description.length > 60 ? '…' : '') : '—'}
+                          </td>
+                          <td>{row.role_titles || '—'}</td>
+                          <td>{row.contact_source || '—'}</td>
                         </tr>
                       ))}
                     </tbody>
