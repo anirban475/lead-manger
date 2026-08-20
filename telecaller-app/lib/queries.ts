@@ -50,9 +50,24 @@ const HAS_PHONE = `contact_phone IS NOT NULL AND length(regexp_replace(contact_p
 // Dead phone numbers logged as invalid_number must not be re-dialled.
 const NOT_INVALID_NUMBER = `last_disposition IS DISTINCT FROM 'invalid_number'`;
 
-export async function getQueue(opts: { tier?: string } = {}): Promise<Lead[]> {
-  const where: string[] = [`status NOT IN ${CLOSED}`, HAS_PHONE, NOT_INVALID_NUMBER];
-  const params: unknown[] = [];
+// Brand gate. `brand` on a lead is the single owner used for attribution and CAC.
+// `eligible_brands` is who is ALLOWED to work it, and may hold both brands.
+// The queue filters on eligibility, never on ownership. Admins see everything.
+// Brand is read from app_users at query time rather than from the session token,
+// so a reassignment takes effect immediately and old cookies cannot leak leads.
+const BRAND_GATE = `(
+    (SELECT u.role FROM app_users u WHERE u.email = $EMAIL) = 'admin'
+    OR (SELECT u.brand FROM app_users u WHERE u.email = $EMAIL) = ANY(leads.eligible_brands)
+  )`;
+
+export async function getQueue(email: string, opts: { tier?: string } = {}): Promise<Lead[]> {
+  const params: unknown[] = [email];
+  const where: string[] = [
+    `status NOT IN ${CLOSED}`,
+    HAS_PHONE,
+    NOT_INVALID_NUMBER,
+    BRAND_GATE.replaceAll('$EMAIL', '$1'),
+  ];
   if (opts.tier) {
     params.push(opts.tier);
     where.push(`tier = $${params.length}`);
@@ -68,7 +83,7 @@ export async function getQueue(opts: { tier?: string } = {}): Promise<Lead[]> {
   return query<Lead>(sql, params);
 }
 
-export async function getFollowups(): Promise<Lead[]> {
+export async function getFollowups(email: string): Promise<Lead[]> {
   const sql = `
     SELECT ${LEAD_COLS} FROM leads
     WHERE next_action_date IS NOT NULL
@@ -76,9 +91,10 @@ export async function getFollowups(): Promise<Lead[]> {
       AND status NOT IN ${CLOSED}
       AND ${HAS_PHONE}
       AND ${NOT_INVALID_NUMBER}
+      AND ${BRAND_GATE.replaceAll('$EMAIL', '$1')}
     ORDER BY next_action_date ASC, score DESC NULLS LAST
     LIMIT 200`;
-  return query<Lead>(sql);
+  return query<Lead>(sql, [email]);
 }
 
 export async function getLead(companyKey: string): Promise<Lead | null> {

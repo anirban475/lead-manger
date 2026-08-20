@@ -1,10 +1,13 @@
 import { getQueue } from '@/lib/queries';
+import { getSession } from '@/lib/auth';
 import CallSheet from '@/components/CallSheet';
 
 export const dynamic = 'force-dynamic';
 
 export default async function QueuePage() {
-  const leads = await getQueue();
+  const session = await getSession();
+  if (!session) return null;
+  const leads = await getQueue(session.email);
 
   return (
     <>
