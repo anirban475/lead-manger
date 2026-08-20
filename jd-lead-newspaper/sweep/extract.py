@@ -188,7 +188,12 @@ ROLE_BLOCKLIST = {
     'experience', 'qualification', 'salary', 'handsome salary', 'urgent', 'urgently',
     'full time', 'part time', 'male', 'female', 'candidates', 'walk in', 'interview',
     'walkin', 'vacancy', 'vacancies', 'situations vacant', 'job vacancy', 'hiring',
-    'required', 'wanted', 'req', 'reqd', 'requires', 'marketing manager exp', 'retail showroom'
+    'required', 'wanted', 'req', 'reqd', 'requires', 'marketing manager exp', 'retail showroom',
+    'consultant', 'distributor business manager', 'business development manager',
+    'business development executive', 'import executive', 'export executive',
+    'procurement executive', 'billing staff', 'dj', 'steward', 'captain', 'bartender',
+    'chef', 'commis', 'gre', 'guest relations executive', 'front office executive',
+    'caretaker', 'incharge', 'stock assistant'
 }
 
 MATRIMONIAL_MARKERS = [
@@ -285,13 +290,22 @@ HIGH_VOL_ROLES = [
 ]
 HIGH_VOL_PATS = [re.compile(p, re.IGNORECASE) for p in HIGH_VOL_ROLES]
 
+INVALID_STAFF_QUALIFIERS = {
+    'urgently', 'urgent', 'required', 'requires', 'wanted', 'need', 'needs', 'good',
+    'any', 'all', 'the', 'our', 'for', 'with', 'and', 'to', 'in', 'at', 'on', 'by', 'from',
+    'experienced', 'exp', 'fresher', 'freshers', 'candidate', 'candidates', 'vacancy',
+    'vacancies', 'hiring', 'full', 'part', 'time', 'staff', 'more', 'some', 'few', 'only',
+    'total', 'such', 'other', 'new', 'have', 'having', 'req', 'reqd', 'preference', 'preferred'
+}
+STAFF_PAT = re.compile(r'\b([A-Za-z]{3,20})\s+Staff\b', re.I)
+
 ROLE_PATTERNS = [
-    # Multi-word & Specific Titles First
-    (re.compile(r'\bVice\s+Principals?\b', re.I), "Vice Principal"),
-    (re.compile(r'\bPrincipals?\b', re.I), "Principal"),
-    (re.compile(r'\b(?:Special\s+Educator|Sp\.?\s*Educator|Spl\.?\s*Edu(?:cator)?)\b', re.I), "Special Educator"),
+    # Multi-word & Specific Academic/Education Titles First
+    (re.compile(r'\bVice\s+Principals?\b|\bVice-?\s*Principals?\b', re.I), "Vice Principal"),
+    (re.compile(r'\bPrincipals?\b|\bVice-?\s*Chancellors?\b|\bVC\b', re.I), "Principal"),
+    (re.compile(r'\b(?:Special\s+Educator|Sp\.?\s*Educator|Spl\.?\s*Edu(?:cator)?|Special\s+Education)\b', re.I), "Special Educator"),
     (re.compile(r'\b(?:Librarians?|Lib)\b', re.I), "Librarian"),
-    (re.compile(r'\bLab(?:oratory)?\s+Assistants?\b', re.I), "Lab Assistant"),
+    (re.compile(r'\bLab(?:oratory)?\s+(?:Assistants?|Assts?|Asst\.?)\b', re.I), "Lab Assistant"),
     (re.compile(r'\bLab(?:oratory)?\s+Attendants?\b', re.I), "Lab Attendant"),
     (re.compile(r'\bLab(?:oratory)?\s+Technicians?\b', re.I), "Lab Technician"),
     (re.compile(r'\bSports?\s+Coach(?:es)?\b', re.I), "Sports Coach"),
@@ -305,12 +319,12 @@ ROLE_PATTERNS = [
     (re.compile(r'\b(?:PRT|Primary\s+Teachers?)\b', re.I), "PRT"),
     (re.compile(r'\b(?:NTT|Nursery\s+Teacher\s+Training|Nursery\s+Teachers?)\b', re.I), "NTT"),
     (re.compile(r'\bPET(?:\s*\(?[MFmf]\)?)?\b|\bPhysical\s+Education\s+Teachers?\b', re.I), "PET"),
-    (re.compile(r'\bTeachers?\b|\bTeaching\s+Positions?\b|\bexp\.?\s*trs\b|\btrs\b', re.I), "Teacher"),
+    (re.compile(r'\bTeachers?\b|\bTeaching\s+Positions?\b|\bTeaching\s+Staff\b|\bexp\.?\s*trs\b|\btrs\b|\b(?:to\s+)?teach\b', re.I), "Teacher"),
     (re.compile(r'\bSanskrit\b', re.I), "Sanskrit"),
     (re.compile(r'\bHistory\b', re.I), "History"),
 
-    # Medical
-    (re.compile(r'\bStaff\s+Nurses?\b', re.I), "Staff Nurse"),
+    # Medical & Healthcare
+    (re.compile(r'\bStaff\s+Nurses?\b|\bNursing\s+Staff\b', re.I), "Staff Nurse"),
     (re.compile(r'\bNurses?\b', re.I), "Nurse"),
     (re.compile(r'\bGNM\b', re.I), "GNM"),
     (re.compile(r'\bB\.?Sc(?:\.?|\s+)\s*Nursing\b', re.I), "B.Sc Nursing"),
@@ -320,7 +334,7 @@ ROLE_PATTERNS = [
     (re.compile(r'\bBAMS\b', re.I), "BAMS"),
     (re.compile(r'\bBDS\b', re.I), "BDS"),
     (re.compile(r'\bBHMS\b', re.I), "BHMS"),
-    (re.compile(r'\bDoctors?\b', re.I), "Doctor"),
+    (re.compile(r'\bDoctors?\b|\bResident\s+Doctors?\b', re.I), "Doctor"),
     (re.compile(r'\bDentists?\b', re.I), "Dentist"),
     (re.compile(r'\bPhysicians?\b', re.I), "Physician"),
     (re.compile(r'\b(?:Paediatricians?|Pediatricians?)\b', re.I), "Paediatrician"),
@@ -347,43 +361,74 @@ ROLE_PATTERNS = [
     (re.compile(r'\bWard\s+Boys?\b', re.I), "Ward Boy"),
     (re.compile(r'\bOT\s+Technicians?\b', re.I), "OT Technician"),
 
-    # Commercial and Admin
+    # Business, Commercial & Management
+    (re.compile(r'\bDistributor\s+Business\s+(?:Managers?|Mgrs?|Mgr\.?)\b', re.I), "Distributor Business Manager"),
+    (re.compile(r'\bArea\s+Business\s+(?:Managers?|Mgrs?|Mgr\.?)\b', re.I), "Area Business Manager"),
+    (re.compile(r'\b(?:Business\s+Development|BD)\s+(?:Consultants?)\b', re.I), "Business Development Consultant"),
+    (re.compile(r'\b(?:Business\s+Development|BD)\s+(?:Managers?|Mgrs?|Mgr\.?)\b', re.I), "Business Development Manager"),
+    (re.compile(r'\b(?:Business\s+Development|BD)\s+(?:Executives?|Execs?|Exec\.?)\b|\bBDE\b', re.I), "Business Development Executive"),
+    (re.compile(r'\bTerritory\s+(?:Managers?|Mgrs?|Mgr\.?)\b', re.I), "Territory Manager"),
+    (re.compile(r'\bRelationship\s+(?:Managers?|Mgrs?|Mgr\.?)\b', re.I), "Relationship Manager"),
+    (re.compile(r'\bBranch\s+(?:Managers?|Mgrs?|Mgr\.?)\b', re.I), "Branch Manager"),
+    (re.compile(r'\bCommercial\s+(?:Managers?|Mgrs?|Mgr\.?)\b', re.I), "Commercial Manager"),
+    (re.compile(r'\bProcurement\s+(?:Executives?|Execs?|Exec\.?|Managers?|Mgrs?|Mgr\.?)\b', re.I), "Procurement Executive"),
+    (re.compile(r'\bImport\s+(?:Executives?|Execs?|Exec\.?)\b', re.I), "Import Executive"),
+    (re.compile(r'\bExport\s+(?:Executives?|Execs?|Exec\.?)\b', re.I), "Export Executive"),
+    (re.compile(r'\bMerchandisers?\b', re.I), "Merchandiser"),
+    (re.compile(r'\bChannel\s+Partners?\b', re.I), "Channel Partner"),
+    (re.compile(r'\bConsultants?\b|(?:कंसल्टेंट|कंसलटेंट)', re.I), "Consultant"),
+
+    # Accounts & Admin
     (re.compile(r'\b(?:Senior|Sr\.?)\s+Accountants?\b', re.I), "Senior Accountant"),
     (re.compile(r'\b(?:Junior|Jr\.?)\s+Accountants?\b', re.I), "Junior Accountant"),
-    (re.compile(r'\bAccounts?\s+Assistants?\b', re.I), "Accounts Assistant"),
-    (re.compile(r'\bAccounts?\s+Executives?\b', re.I), "Account Executive"),
+    (re.compile(r'\bAccounts?\s+(?:Assistants?|Assts?|Asst\.?)\b', re.I), "Accounts Assistant"),
+    (re.compile(r'\bAccounts?\s+(?:Executives?|Execs?|Exec\.?)\b', re.I), "Account Executive"),
     (re.compile(r'\bAccountants?\b|\bAccounts\b|\bExprienced\.?\s*Acc\b', re.I), "Accountant"),
-    (re.compile(r'\bAudit\s+Assistants?\b', re.I), "Audit Assistant"),
-    (re.compile(r'\bAudit\s+Executives?\b', re.I), "Audit Executive"),
-    (re.compile(r'\bTally\s+Operators?\b', re.I), "Tally Operator"),
-    (re.compile(r'\bComputer\s+Operators?\b', re.I), "Computer Operator"),
+    (re.compile(r'\bAudit\s+(?:Assistants?|Assts?|Asst\.?)\b', re.I), "Audit Assistant"),
+    (re.compile(r'\bAudit\s+(?:Executives?|Execs?|Exec\.?)\b', re.I), "Audit Executive"),
+    (re.compile(r'\bTally\s+Operators?\b|\bKnowledge\s+of\s+Tally\b', re.I), "Tally Operator"),
+    (re.compile(r'\bComputer\s+Operators?\b|\bC/oper\b|\bDEO\b|\bDTP\s+Operators?\b', re.I), "Computer Operator"),
     (re.compile(r'\bData\s+Entry(?:\s+Operators?)?\b', re.I), "Data Entry Operator"),
-    (re.compile(r'\bReceptionists?\b', re.I), "Receptionist"),
-    (re.compile(r'\bOffice\s+Assistants?\b|\bOffice\s+Asst\.?\b', re.I), "Office Assistant"),
+    (re.compile(r'\bReceptionists?\b|\bReception\b', re.I), "Receptionist"),
+    (re.compile(r'\bOffice\s+(?:Assistants?|Assts?|Asst\.?)\b|\bOffice\s+Asst\.?\b', re.I), "Office Assistant"),
     (re.compile(r'\bClerks?\b', re.I), "Clerk"),
-    (re.compile(r'\bAdmin(?:\.|\s+Executives?)?\b', re.I), "Admin Executive"),
-    (re.compile(r'\bStore\s*Keepers?\b', re.I), "Store Keeper"),
-    (re.compile(r'\bPurchase\s+Executives?\b', re.I), "Purchase Executive"),
+    (re.compile(r'\bAdmin\s*(?:Executives?|Execs?|Exec\.?|Assistants?|Assts?|Asst\.?|Officers?|Staff)\b|\bAdministrative\s+Officers?\b', re.I), "Admin Executive"),
+    (re.compile(r'\bStore\s*(?:Keepers?|Managers?|Mgrs?|Mgr\.?)\b', re.I), "Store Keeper"),
+    (re.compile(r'\bPurchase\s+(?:Executives?|Execs?|Exec\.?)\b', re.I), "Purchase Executive"),
     (re.compile(r'\bPurchasers?\b', re.I), "Purchaser"),
     (re.compile(r'\bCashiers?\b', re.I), "Cashier"),
-    (re.compile(r'\bTele-?callers?\b|\bTele-?calling(?:\s+Executives?)?\b', re.I), "Telecaller"),
-    (re.compile(r'\bBack\s+Office(?:\s+Executives?)?\b', re.I), "Back Office"),
-    (re.compile(r'\bGraphic\s+Designers?\b', re.I), "Graphic Designer"),
+    (re.compile(r'\bTele-?callers?\b|\bTele-?calling(?:\s+(?:Executives?|Execs?|Exec\.?))?\b', re.I), "Telecaller"),
+    (re.compile(r'\bBack\s+Office(?:\s+(?:Executives?|Execs?|Exec\.?))?\b', re.I), "Back Office"),
+    (re.compile(r'\bGraphic\s+Designers?\b|\b3D\s+artist\b', re.I), "Graphic Designer"),
     (re.compile(r'\bSoftware\s+(?:Developers?|Engineers?)\b|\bWeb\s+Developers?\b', re.I), "Software Developer"),
-    (re.compile(r'\bBilling\s+Executives?\b', re.I), "Billing Executive"),
-    (re.compile(r'\bCommercial\s+Managers?\b', re.I), "Commercial Manager"),
-    (re.compile(r'\bHR\s+Managers?\b', re.I), "HR Manager"),
-    (re.compile(r'\bHR\s+Executives?\b|\bHR\b', re.I), "HR Executive"),
+    (re.compile(r'\bBilling\s+Staff\b', re.I), "Billing Staff"),
+    (re.compile(r'\bBilling\s+(?:Executives?|Execs?|Exec\.?)\b', re.I), "Billing Executive"),
+    (re.compile(r'\bHR\s+(?:Managers?|Mgrs?|Mgr\.?)\b', re.I), "HR Manager"),
+    (re.compile(r'\bHR\s+(?:Executives?|Execs?|Exec\.?)\b|\bHR\b', re.I), "HR Executive"),
 
     # Sales and Field
-    (re.compile(r'\bSales\s+Managers?\b', re.I), "Sales Manager"),
-    (re.compile(r'\bSales\s+Executives?\b', re.I), "Sales Executive"),
-    (re.compile(r'\bMarketing\s+Managers?\b', re.I), "Marketing Manager"),
-    (re.compile(r'\bMarketing\s+Executives?\b', re.I), "Marketing Executive"),
+    (re.compile(r'\bSales\s+(?:Managers?|Mgrs?|Mgr\.?)\b', re.I), "Sales Manager"),
+    (re.compile(r'\bSales\s+(?:Executives?|Execs?|Exec\.?|Representatives?|Reps?|Rep\.?)\b', re.I), "Sales Executive"),
+    (re.compile(r'\bMarketing\s+(?:Managers?|Mgrs?|Mgr\.?)\b', re.I), "Marketing Manager"),
+    (re.compile(r'\bMarketing\s+(?:Executives?|Execs?|Exec\.?)\b', re.I), "Marketing Executive"),
     (re.compile(r'\bField\s+Officers?\b', re.I), "Field Officer"),
-    (re.compile(r'\bBusiness\s+Development\s+Executives?\b|\bBDE\b', re.I), "Business Development Executive"),
-    (re.compile(r'\bArea\s+Managers?\b', re.I), "Area Manager"),
-    (re.compile(r'\bCounter\s+Sales(?:\s+Executives?)?\b', re.I), "Counter Sales"),
+    (re.compile(r'\bArea\s+(?:Managers?|Mgrs?|Mgr\.?)\b', re.I), "Area Manager"),
+    (re.compile(r'\bCounter\s+Sales(?:\s+(?:Executives?|Execs?|Exec\.?))?\b', re.I), "Counter Sales"),
+
+    # Hospitality and Service
+    (re.compile(r'\bGuest\s+Relations\s+(?:Executives?|Execs?|Exec\.?)\b|\bGRE\b', re.I), "Guest Relations Executive"),
+    (re.compile(r'\bFront\s+Office\s+(?:Executives?|Execs?|Exec\.?|Assistants?|Assts?|Asst\.?)\b', re.I), "Front Office Executive"),
+    (re.compile(r'\bCustomer\s+Service\s+(?:Executives?|Execs?|Exec\.?)\b', re.I), "Customer Service Executive"),
+    (re.compile(r'\bPersonal\s+Secretar(?:y|ies|iat)?\b|\bExecutive\s+Assistants?\b', re.I), "Personal Secretary"),
+    (re.compile(r'\bSecretar(?:y|ies|iat)?\b', re.I), "Secretary"),
+    (re.compile(r'\bCaretakers?\b|\b(?:day\s*care|creche)\b', re.I), "Caretaker"),
+    (re.compile(r'\bHousekeeping\s+Supervisors?\b', re.I), "Housekeeping Supervisor"),
+    (re.compile(r'\bBartenders?\b', re.I), "Bartender"),
+    (re.compile(r'\bStewards?\b', re.I), "Steward"),
+    (re.compile(r'\bCaptains?\b', re.I), "Captain"),
+    (re.compile(r'\bCommis(?:\s+[I|V|X]+)?\b', re.I), "Commis"),
+    (re.compile(r'\bChefs?\b|\bCooks?\b', re.I), "Chef"),
+    (re.compile(r'\bDJ\b|\bDJs\b|\bDisc\s+Jockey\b', re.I), "DJ"),
 
     # Technical and Industrial
     (re.compile(r'\bSite\s+Supervisors?\b', re.I), "Site Supervisor"),
@@ -391,10 +436,11 @@ ROLE_PATTERNS = [
     (re.compile(r'\bCivil\s+Engineers?\b', re.I), "Civil Engineer"),
     (re.compile(r'\bElectrical\s+Engineers?\b', re.I), "Electrical Engineer"),
     (re.compile(r'\bMechanical\s+Engineers?\b', re.I), "Mechanical Engineer"),
+    (re.compile(r'\bJunior\s+Engineers?\b|\bJE\b', re.I), "Junior Engineer"),
     (re.compile(r'\bEstimation\s+Engineers?\b', re.I), "Estimation Engineer"),
     (re.compile(r'\bBOQ\s+Engineers?\b', re.I), "BOQ Engineer"),
     (re.compile(r'\bInterior\s+Designers?\b', re.I), "Interior Designer"),
-    (re.compile(r'\bDraughts(?:man|men)\b|\bDrafts(?:man|men)\b', re.I), "Draughtsman"),
+    (re.compile(r'\bDraughts(?:man|men)\b|\bDrafts(?:man|men)\b|\bDraftsman\b', re.I), "Draughtsman"),
     (re.compile(r'\bFitters?\b', re.I), "Fitter"),
     (re.compile(r'\bWelders?\b', re.I), "Welder"),
     (re.compile(r'\bElectricians?\b', re.I), "Electrician"),
@@ -402,23 +448,30 @@ ROLE_PATTERNS = [
     (re.compile(r'\bCNC\s+Operators?\b', re.I), "CNC Operator"),
     (re.compile(r'\bQuality\s+Chemists?\b', re.I), "Quality Chemist"),
     (re.compile(r'\bChemists?\b', re.I), "Chemist"),
+    (re.compile(r'\bQC\s*/\s*QA\b|\bQA\s*/\s*QC\b|\bQC\b|\bQA\b', re.I), "QC/QA"),
     (re.compile(r'\bProduction\s+Supervisors?\b', re.I), "Production Supervisor"),
-    (re.compile(r'\bProduction\s+Managers?\b', re.I), "Production Manager"),
-    (re.compile(r'\bPlant\s+Managers?\b', re.I), "Plant Manager"),
-    (re.compile(r'\bProject\s+Managers?\b', re.I), "Project Manager"),
+    (re.compile(r'\bProduction\s+(?:Managers?|Mgrs?|Mgr\.?)\b', re.I), "Production Manager"),
+    (re.compile(r'\bPlant\s+(?:Managers?|Mgrs?|Mgr\.?)\b', re.I), "Plant Manager"),
+    (re.compile(r'\bProject\s+(?:Managers?|Mgrs?|Mgr\.?)\b|\bProject\s+Engineers?\b', re.I), "Project Manager"),
     (re.compile(r'\bMaintenance\s+Engineers?\b', re.I), "Maintenance Engineer"),
     (re.compile(r'\bTechnicians?\b', re.I), "Technician"),
     (re.compile(r'\bHelpers?\b', re.I), "Helper"),
+    (re.compile(r'\bLoading\s+Incharges?\b|\bIncharges?\b', re.I), "Incharge"),
+    (re.compile(r'\bStock\s+(?:Assistants?|Assts?|Asst\.?)\b', re.I), "Stock Assistant"),
 
-    # Service
+    # Service & General Staff / Roles
     (re.compile(r'\bSecurity\s+Guards?\b', re.I), "Security Guard"),
     (re.compile(r'\bGuards?\b', re.I), "Guard"),
     (re.compile(r'\bDrivers?\b', re.I), "Driver"),
     (re.compile(r'\bPeons?\b', re.I), "Peon"),
-    (re.compile(r'\bCooks?\b|\bChefs?\b', re.I), "Cook"),
     (re.compile(r'\bHousekeeping(?:\s+Staff)?\b', re.I), "Housekeeping"),
     (re.compile(r'\bAttendants?\b', re.I), "Attendant"),
     (re.compile(r'\bDelivery\s+Boys?\b', re.I), "Delivery Boy"),
+    (re.compile(r'\bSupervisors?\b', re.I), "Supervisor"),
+    (re.compile(r'\b(?:General\s+)?(?:Managers?|Mgrs?|Mgr\.?)\b', re.I), "Manager"),
+    (re.compile(r'\bExecutives?\b|\bExec\b', re.I), "Executive"),
+    (re.compile(r'\bAssistants?\b', re.I), "Assistant"),
+    (re.compile(r'सहायक', re.I), "Assistant"),
 ]
 
 STOPWORDS = {
@@ -534,9 +587,41 @@ def extract_clean_ad_text(text: str, anchor_s: int, anchor_e: int, prev_anchor_e
     return text[start_pos:end_pos].strip()
 
 
+def expand_compound_titles(text: str) -> str:
+    # Suffix distribution: e.g. "Sales/Marketing Exec", "Import/Export Executive", "Accounts/Admin Assistant"
+    suffix_pattern = re.compile(
+        r'\b([A-Za-z]+(?:\s+[A-Za-z]+)?)\s*/\s*([A-Za-z]+(?:\s+[A-Za-z]+)?)\s+(Exec(?:utive)?s?|Exec\.?|Managers?|Mgrs?|Mgr\.?|Assistants?|Assts?|Asst\.?|Staff|Officers?|Supervisors?|Engineers?|Consultants?|Secretar(?:y|ies|iat)?|Operators?|Representatives?|Reps?|Rep\.?)\b',
+        re.I
+    )
+    text = suffix_pattern.sub(r'\1 \3 , \2 \3', text)
+
+    # 3-part suffix distribution: e.g. "A/B/C Exec"
+    suffix_3_pattern = re.compile(
+        r'\b([A-Za-z]+)\s*/\s*([A-Za-z]+)\s*/\s*([A-Za-z]+)\s+(Exec(?:utive)?s?|Exec\.?|Managers?|Mgrs?|Mgr\.?|Assistants?|Assts?|Asst\.?|Staff|Officers?|Supervisors?|Engineers?|Consultants?)\b',
+        re.I
+    )
+    text = suffix_3_pattern.sub(r'\1 \4 , \2 \4 , \3 \4', text)
+
+    # Prefix distribution: e.g. "Manager - Sales & Marketing" or "Manager Sales/Marketing"
+    prefix_pattern = re.compile(
+        r'\b(Managers?|Mgrs?|Mgr\.?|Executives?|Execs?|Exec\.?|Assistants?|Assts?|Asst\.?|Officers?|Supervisors?|Engineers?)\s*(?:[-–—:]|\s+for|\s+of|\s*\(|\s+in)?\s*([A-Za-z]+)\s*(?:&|and|/)\s*([A-Za-z]+)\b',
+        re.I
+    )
+    text = prefix_pattern.sub(r'\2 \1 , \3 \1', text)
+
+    # Combined conjunctions: e.g. "Sales & Marketing Manager"
+    and_pattern = re.compile(
+        r'\b([A-Za-z]+)\s*(?:&|and)\s*([A-Za-z]+)\s+(Managers?|Mgrs?|Mgr\.?|Executives?|Execs?|Exec\.?|Assistants?|Assts?|Asst\.?|Officers?|Supervisors?|Engineers?)\b',
+        re.I
+    )
+    text = and_pattern.sub(r'\1 \3 , \2 \3', text)
+    return text
+
+
 def extract_roles(text: str) -> list[str]:
     clean_text = EMAIL_RE.sub(' ', text)
     clean_text = PHONE_RE.sub(' ', clean_text)
+    clean_text = expand_compound_titles(clean_text)
 
     delims = r'[,/\n;&|•+]'
     raw_fragments = [f.strip() for f in re.split(delims, clean_text) if f.strip()]
@@ -544,6 +629,16 @@ def extract_roles(text: str) -> list[str]:
 
     for raw_frag in raw_fragments:
         frag = raw_frag
+        # Check generic <qualifier> Staff
+        m_staff = STAFF_PAT.search(frag)
+        if m_staff:
+            q = m_staff.group(1).lower()
+            if q not in INVALID_STAFF_QUALIFIERS:
+                staff_title = f"{m_staff.group(1).title()} Staff"
+                if staff_title not in found:
+                    found.append(staff_title)
+                frag = frag[:m_staff.start()] + ' ' * (m_staff.end() - m_staff.start()) + frag[m_staff.end():]
+
         for pat, role in ROLE_PATTERNS:
             m = pat.search(frag)
             if m:
@@ -553,6 +648,15 @@ def extract_roles(text: str) -> list[str]:
 
     if not found:
         t = clean_text
+        m_staff = STAFF_PAT.search(t)
+        if m_staff:
+            q = m_staff.group(1).lower()
+            if q not in INVALID_STAFF_QUALIFIERS:
+                staff_title = f"{m_staff.group(1).title()} Staff"
+                if staff_title not in found:
+                    found.append(staff_title)
+                t = t[:m_staff.start()] + ' ' * (m_staff.end() - m_staff.start()) + t[m_staff.end():]
+
         for pat, role in ROLE_PATTERNS:
             m = pat.search(t)
             if m:
@@ -562,7 +666,7 @@ def extract_roles(text: str) -> list[str]:
 
     if not found:
         m = re.search(
-            r'(?:wanted|required|requires|post\s+of)\s+(?!(?:for|at|in|on|by|to|with|from|urgently|immediate|a|an|the)\b)([A-Za-z\s]{3,30}?)(?:\n|,|\.|\bfor\b|\bwith\b|\bsalary\b|\bexp\b|\bcontact\b|\bcall\b|\bapply\b|\bat\b|\bin\b)',
+            r'(?:wanted|required|requires|post\s+of|posts\s+of|seeking\s+applications\s+for\s+the\s+posts?\s+of)\s+(?!(?:for|at|in|on|by|to|with|from|urgently|immediate|a|an|the)\b)([A-Za-z\s]{3,30}?)(?:\n|,|\.|\bfor\b|\bwith\b|\bsalary\b|\bexp\b|\bcontact\b|\bcall\b|\bapply\b|\bat\b|\bin\b)',
             clean_text,
             re.IGNORECASE
         )
