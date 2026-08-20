@@ -86,3 +86,36 @@ Two to three samples per weekday for most editions. Enough to act on, not enough
 to call a single-sample weekday empty.
 
 Contact counts are raw regex matches, not deduplicated or validated.
+
+## The day map is TOI-shaped, and HT does not follow it (2026-08-20)
+
+The v3 measurement above was taken across 12 editions dominated by Times of India
+and Mirror. When Hindustan Times was restored to the sweep, its own history told a
+different story. Pass-2 pages per day for `ht-delhi` across 18 consecutive days,
+pass 2 being the gate that decides whether a phone number survives at all:
+
+| Weekday | Edition-days | Pass-2 pages | Per day |
+|---|---|---|---|
+| Tuesday | 2 | 5 | **2.50** |
+| Friday | 2 | 4 | **2.00** |
+| Saturday | 3 | 5 | 1.67 |
+| Sunday | 3 | 5 | 1.67 |
+| Monday | 3 | 3 | 1.00 |
+| Thursday | 2 | 1 | 0.50 |
+| **Wednesday** | 3 | 2 | **0.67** |
+
+HT Delhi's strongest single days were Tuesday 2026-08-11 at 33 keywords and Friday
+2026-08-14 at 24. Wednesday is near its worst, and Wednesday is one of the two days
+the cron runs. On Wednesday 2026-08-19 the whole 23-page HT Delhi edition peaked at
+6 keywords, cleared no page for pass 2, and contributed nothing.
+
+Seven editions sat in the same trap that day, maxing at 6 or 7 against a threshold
+of 8: `ht-gurgaon`, `ht-lucknow`, `ht-noida`, `ht-varanasi`, `et-kolkata`,
+`et-mumbai`, `mirror-bangalore`. A near-miss on the threshold is indistinguishable
+in the data from a paper with no jobs in it.
+
+**Do not conclude the new editions are weak.** That is one Wednesday, and the
+coverage matrix already records that single-date rankings are noise, with Delhi
+swinging from 1 phone to 275 across consecutive Sundays. The open question is
+whether a per-paper day map beats one global schedule. Answering it needs several
+weeks of per-edition weekday data, which the sweep is now collecting.
