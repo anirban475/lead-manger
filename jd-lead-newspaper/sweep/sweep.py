@@ -25,7 +25,8 @@ HTTP_HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
         "(KHTML, like Gecko) Chrome/126.0 Safari/537.36"
-    )
+    ),
+    "Referer": "https://www.indupaper.com/",
 }
 
 
@@ -551,6 +552,36 @@ def process_page(edition: dict, date_obj: datetime.date, weekday: str, page_no: 
     return {"status": status}
 
 
+def check_manifest_stub(img_urls: list[str]) -> tuple[bool, str | None]:
+    if not img_urls:
+        return False, None
+    for u in img_urls:
+        if "indupaper.com/assets/" in u:
+            return True, f"Image URL contains indupaper.com/assets/: {u}"
+    if len(img_urls) <= 5:
+        sizes = []
+        for u in img_urls:
+            try:
+                head_res = requests.head(u, headers=HTTP_HEADERS, timeout=10, allow_redirects=True)
+                cl = head_res.headers.get("content-length")
+                if head_res.status_code == 200 and cl is not None and cl.isdigit():
+                    sizes.append(int(cl))
+                else:
+                    get_res = requests.get(u, headers=HTTP_HEADERS, stream=True, timeout=10)
+                    cl = get_res.headers.get("content-length")
+                    if cl is not None and cl.isdigit():
+                        sizes.append(int(cl))
+                    else:
+                        sizes.append(len(get_res.content))
+            except Exception:
+                pass
+        if sizes:
+            avg_size = sum(sizes) / len(sizes)
+            if avg_size < 200 * 1024:
+                return True, f"Stub detected: {len(img_urls)} pages with average size {avg_size/1024:.1f}KB (<200KB)"
+    return False, None
+
+
 def fetch_manifest(edition: dict, date_obj: datetime.date) -> tuple[list[str], str, str | None]:
     date_style = edition.get("date_style", "iso")
     params = dict(edition.get("params", {}))
@@ -572,6 +603,13 @@ def fetch_manifest(edition: dict, date_obj: datetime.date) -> tuple[list[str], s
         if isinstance(data.get("data"), dict):
             html = data["data"].get("htmlContent", "")
         img_urls = IMG_SRC_RE.findall(html)
+        if not img_urls:
+            return [], "empty", "No images found in manifest"
+
+        is_stub, stub_reason = check_manifest_stub(img_urls)
+        if is_stub:
+            return img_urls, "manifest_stub", stub_reason
+
         return img_urls, "ok", None
     except Exception as e:
         return [], "fetch_failed", str(e)
