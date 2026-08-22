@@ -71,3 +71,49 @@ Two traps, both already paid for:
   `CASE WHEN l.brand='amatec' THEN 'Amatec' ELSE 'JobDrive' END`. Anything not
   literally `amatec` lands in JobDrive's numbers silently. Keep
   `eligible_brands` out of that view.
+
+## Call quality lives in a second database
+
+The cockpit connects to `leads`. Call scores, transcripts and coaching analysis
+live in `telecaller_coaching`, written hourly by the n8n ingestion workflow. Same
+Postgres instance, different database, and a Postgres connection is bound to one
+database for its lifetime, so `leads` cannot join to it.
+
+`lib/coachingDb.ts` opens a second pool. It derives the coaching connection
+string from `DATABASE_URL` by swapping the database name in the path, with
+`COACHING_DATABASE_URL` as an override. There is deliberately no new credential:
+`leads_user` was granted `CONNECT`, `USAGE` on schema public, and `SELECT` on
+`agents`, `calls` and `chat_messages` (see `sql/02_agents_app_user_email.sql`).
+
+`agents.app_user_email` is the only link between the two databases. It maps a
+coaching agent to an `app_users` row by email. Keep it populated when a
+telecaller is onboarded, or their calls become invisible to the cockpit while
+still being ingested perfectly happily.
+
+Traps worth knowing before touching any of this:
+
+- **Do not join across the two databases in SQL.** There is no FDW and there
+  should not be one. `agents` and `calls` are both in `telecaller_coaching`, so
+  every dashboard query is single database. The session already tells you who is
+  logged in, which is the only thing `leads` contributes.
+- **`analysis->>'talk_ratio'` of `'0/0'`, `'100/0'` or `'0/100'` means the call
+  never happened**: voicemail, IVR, hold music or silence. Exclude these from
+  every average. Excluding is correct, deleting is not.
+- **The Saturday weekly report task deletes those junk rows outright.** Any view
+  built on this data will see history shrink behind it every week. Changing that
+  delete to a flag is the right fix and has not been done yet.
+- **`talk_ratio` is the model's guess from reading a transcript, not a
+  measurement.** The first number is the agent's share and lower is better. Show
+  it as an estimate. Do not let anyone be judged on it.
+- **`duration_sec` is null on every row.** Call volume means a count of calls,
+  never minutes.
+- **`key_issues` is free text and it is a mess.** 1,371 distinct strings across
+  2,499 rows. "Lack of engagement" alone is split across four near-identical
+  wordings totalling 228 calls. Counting the raw strings produces a list of
+  one-offs that nobody can act on. A fixed category set is needed before any
+  "what am I getting wrong" panel is worth building.
+
+Baseline as of 22 Aug 2026, 90 day window, for sanity checking any future change:
+Bhratti Raval 986 calls, average score 4.39, average objection handling 3.32
+against a target of 6, average agent talk share 57.12. `tools/perf-check.mjs`
+prints all of this and exits non-zero if the data layer breaks.
