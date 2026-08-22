@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { getSession } from '@/lib/auth';
+import { getSession, canSeeTeam } from '@/lib/auth';
 import { logout } from '@/actions/auth';
 import AppNav from '@/components/AppNav';
 
@@ -15,9 +15,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         displayName={session.displayName}
         role={session.role}
         isAdmin={session.role === 'admin'}
+        canSeeTeam={canSeeTeam(session.role)}
         logoutAction={logout}
       />
       <div className="main">{children}</div>
     </div>
   );
 }
+

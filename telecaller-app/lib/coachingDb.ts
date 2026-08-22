@@ -19,20 +19,23 @@ function getCoachingConnectionString(): string {
 // Singleton pool — reused across hot reloads in dev, one per container in prod.
 const g = globalThis as unknown as { _coachingPgPool?: Pool };
 
-export const coachingPool: Pool =
-  g._coachingPgPool ??
-  new Pool({
-    connectionString: getCoachingConnectionString(),
-    max: 5,
-    idleTimeoutMillis: 30_000,
-  });
-
-if (process.env.NODE_ENV !== 'production') g._coachingPgPool = coachingPool;
+export function getCoachingPool(): Pool {
+  if (!g._coachingPgPool) {
+    g._coachingPgPool = new Pool({
+      connectionString: getCoachingConnectionString(),
+      max: 5,
+      idleTimeoutMillis: 30_000,
+    });
+  }
+  return g._coachingPgPool;
+}
 
 export async function coachingQuery<T = Record<string, unknown>>(
   text: string,
   params?: unknown[],
 ): Promise<T[]> {
-  const res = await coachingPool.query(text, params as unknown[] | undefined);
+  const pool = getCoachingPool();
+  const res = await pool.query(text, params as unknown[] | undefined);
   return res.rows as T[];
 }
+

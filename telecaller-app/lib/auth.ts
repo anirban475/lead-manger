@@ -106,3 +106,30 @@ export async function requireAdmin(): Promise<Session> {
     role: u.role || 'admin',
   };
 }
+
+export function canSeeTeam(role: string): boolean {
+  return role === 'admin' || role === 'manager';
+}
+
+export async function requireTeamView(): Promise<Session> {
+  const session = await getSession();
+  if (!session) throw new Error('Unauthorized');
+  const rows = await query<{
+    email: string;
+    display_name: string | null;
+    role: string | null;
+    is_active: boolean;
+  }>('SELECT email, display_name, role, is_active FROM app_users WHERE email = $1 AND is_active = true', [
+    session.email.toLowerCase().trim(),
+  ]);
+  const u = rows[0];
+  if (!u || !u.is_active || !u.role || !canSeeTeam(u.role)) {
+    throw new Error('Unauthorized');
+  }
+  return {
+    email: u.email,
+    displayName: u.display_name || u.email,
+    role: u.role,
+  };
+}
+

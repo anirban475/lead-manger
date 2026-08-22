@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 const BASE_NAV = [
   { href: '/queue', label: 'Queue', ico: '📋' },
   { href: '/followups', label: 'Follow-ups', ico: '📞' },
+  { href: '/performance', label: 'Performance', ico: '📈' },
   { href: '/stats', label: 'Stats', ico: '📊' },
 ];
 
@@ -13,11 +14,13 @@ export default function AppNav({
   displayName,
   role = 'caller',
   isAdmin = false,
+  canSeeTeam = false,
   logoutAction,
 }: {
   displayName: string;
   role?: string;
   isAdmin?: boolean;
+  canSeeTeam?: boolean;
   logoutAction: () => Promise<void>;
 }) {
   const path = usePathname();
